@@ -2,13 +2,17 @@ package main
 
 import (
 	"net/http"
-	"repl-backend/pkg/executor"
+
+	"github.com/tiakavousi/codeplayground/pkg/executor"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	router := gin.Default()
+	router := gin.New()
+	// Manually attach Logger and Recovery if needed
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
 
 	// Route to handle code execution requests
 	router.POST("/execute", func(c *gin.Context) {
@@ -31,4 +35,3 @@ func main() {
 	// Run the web server
 	router.Run(":8080")
 }
-
