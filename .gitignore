@@ -1,0 +1,61 @@
+# Binaries for programs and plugins
+*.so
+*.dylib
+*.orig # Git generated files for conflicting
+.history/*
+bin/
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+*.html
+
+# Project local workspace files
+.vscode/
+.idea/
+
+# Operating system files for macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Document files
+*.doc
+*.docx
+*.pdf
+
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.s
+
+# Folders
+_obj
+_test
+
+
+# Go build output
+dist
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Profiles
+*.pprof
+*.profile
+
+# Miscellaneous
+*.swp
+*.swo
+*.tmp
+*.log
+tmp/
+
+# Environment files
+.env
+.env.local
+.env.*.local
