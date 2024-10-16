@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const REPLPlayground = () => {
     const [code, setCode] = useState('');
-    const [language, setLanguage] = useState('python');
+    const [language, setLanguage] = useState('c');
     const [output, setOutput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -10,15 +10,20 @@ const REPLPlayground = () => {
         setIsLoading(true);
         setOutput('');
         try {
-            console.log('Sending request to:', '/execute');
-            console.log('Request body:', { language, code });
+            const requestBody = {
+                language: language,
+                code: code
+            };
+
+            console.log('Sending request to:', 'http://localhost:8080/execute');
+            console.log('Request body:', JSON.stringify(requestBody));
 
             const response = await fetch('/execute', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ language, code }),
+                body: JSON.stringify(requestBody),
             });
 
             console.log('Response status:', response.status);
@@ -29,7 +34,8 @@ const REPLPlayground = () => {
 
             let data;
             try {
-                data = JSON.parse(text);
+                data = text;
+                console.log(text)
             } catch (error) {
                 console.error('Error parsing JSON:', error);
                 setOutput(`Error: Invalid JSON response: ${text.substring(0, 100)}...`);
@@ -58,12 +64,12 @@ const REPLPlayground = () => {
                     onChange={(e) => setLanguage(e.target.value)}
                     style={{ width: '100%', padding: '10px' }}
                 >
-                    <option value="python">Python</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="bash">Bash</option>
-                    <option value="java">Java</option>
                     <option value="c">C</option>
                     <option value="cpp">C++</option>
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="java">Java</option>
+                    <option value="bash">Bash</option>
                 </select>
             </div>
             <textarea
