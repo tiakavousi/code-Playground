@@ -1,4 +1,0 @@
-{
-    "language": "python",
-    "code": "print(42)"
-}

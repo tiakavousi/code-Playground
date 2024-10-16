@@ -15,8 +15,8 @@ const REPLPlayground = () => {
                 code: code
             };
 
-            console.log('Sending request to:', 'http://localhost:8080/execute');
-            console.log('Request body:', JSON.stringify(requestBody));
+            // console.log('Sending request to:', 'http://localhost:8080/execute');
+            // console.log('Request body:', JSON.stringify(requestBody));
 
             const response = await fetch('http://localhost:8080/execute', {
                 method: 'POST',
@@ -26,16 +26,12 @@ const REPLPlayground = () => {
                 body: JSON.stringify(requestBody),
             });
 
-            console.log('Response status:', response.status);
-            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
             const text = await response.text();
-            console.log('Response text:', text);
 
             let data;
             try {
-                data = text;
-                console.log(text)
+                data = JSON.parse(text);
             } catch (error) {
                 console.error('Error parsing JSON:', error);
                 setOutput(`Error: Invalid JSON response: ${text.substring(0, 100)}...`);
@@ -45,8 +41,7 @@ const REPLPlayground = () => {
             if (!response.ok) {
                 setOutput(`Error: ${data.error || 'An error occurred during execution'}`);
             } else {
-                setOutput(data.output || 'No output received');
-                console.log(data.output);
+                setOutput(data.output);
             }
         } catch (error) {
             console.error('Execution error:', error);
@@ -97,7 +92,7 @@ const REPLPlayground = () => {
             <div style={{ marginTop: '20px' }}>
                 <h2>Output:</h2>
                 <pre style={{ backgroundColor: '#f0f0f0', padding: '10px', whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-                    {output || 'No output yet'}
+                    {output}
                 </pre>
             </div>
         </div>
