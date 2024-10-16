@@ -18,7 +18,7 @@ const REPLPlayground = () => {
             console.log('Sending request to:', 'http://localhost:8080/execute');
             console.log('Request body:', JSON.stringify(requestBody));
 
-            const response = await fetch('/execute', {
+            const response = await fetch('http://localhost:8080/execute', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -46,6 +46,7 @@ const REPLPlayground = () => {
                 setOutput(`Error: ${data.error || 'An error occurred during execution'}`);
             } else {
                 setOutput(data.output || 'No output received');
+                console.log(data.output);
             }
         } catch (error) {
             console.error('Execution error:', error);
