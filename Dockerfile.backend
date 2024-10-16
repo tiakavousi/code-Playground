@@ -1,0 +1,31 @@
+# Build stage
+FROM golang:1.22-alpine AS builder
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the Go module files and download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the rest of the application code
+COPY . .
+
+# Build the Go app (adjust the binary name if necessary)
+RUN go build -o code-playground-backend ./cmd/main.go
+
+# Final stage
+FROM alpine:latest
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the compiled binary from the builder stage
+COPY --from=builder /app/code-playground-backend .
+
+# Expose the port the service will run on (default: 8080)
+EXPOSE 8080
+
+# Command to run the binary
+CMD ["./code-playground-backend"]
+

@@ -1,0 +1,24 @@
+# Build stage
+FROM klakegg/hugo:ext-alpine AS builder
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the Hugo site files into the container
+COPY ./frontend/ .
+
+# Build the Hugo site (the output will be in the 'public' folder)
+RUN hugo
+
+# Serve stage
+FROM nginx:alpine
+
+# Copy the built Hugo site from the 'builder' stage to the Nginx html directory
+COPY --from=builder /app/public /usr/share/nginx/html
+
+# Expose the port the Nginx server will run on (default: 80)
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
+
