@@ -16,4 +16,4 @@
 - C++ (compiled using g++)
 
 ## License
-Code released under the [MIT License](https://github.com/tiakavousi/codeplayground/blob/main/LICENSE).
+Code released under the [MIT License](https://github.com/tiakavousi/codeplayground/blob/main/LICENSE.md).
