@@ -1,13 +1,22 @@
 package main
 
 import (
+	"context"
+	"log"
 	"net/http"
 	"time"
 
-	"github.com/tiakavousi/codeplayground/pkg/executor"
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+	"github.com/tiakavousi/codeplayground/pkg/executor"
 )
+
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true // Be careful with this in production
+	},
+}
 
 func main() {
 	router := gin.New()
@@ -19,22 +28,27 @@ func main() {
 	// Enable CORS with custom configuration
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"}, // Allow your frontend's origin
-		AllowMethods:     []string{"POST", "OPTIONS"},       // Allow POST and OPTIONS requests
-		AllowHeaders:     []string{"Origin", "Content-Type"},// Allow necessary headers
+		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Upgrade", "Connection"},
 		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,                             // Allow credentials if needed
+		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
 
 	// Handle OPTIONS preflight request for /execute
 	router.OPTIONS("/execute", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-		c.Header("Access-Control-Allow-Methods", "POST, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Content-Type")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Upgrade, Connection")
 		c.Status(http.StatusOK)
 	})
 
-	// Route to handle code execution requests
+	// WebSocket route for interactive code execution
+	router.GET("/execute", func(c *gin.Context) {
+		handleWebSocket(c.Writer, c.Request)
+	})
+
+	// Keeping the old POST route for non-interactive execution
 	router.POST("/execute", func(c *gin.Context) {
 		var req executor.ExecRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -42,7 +56,6 @@ func main() {
 			return
 		}
 
-		// Call the execution function
 		output, err := executor.ExecuteCode(req)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -59,4 +72,57 @@ func main() {
 
 	// Run the web server on port 8080
 	router.Run(":8080")
+}
+
+func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer conn.Close()
+
+	// Read the initial request
+	var req executor.ExecRequest
+	err = conn.ReadJSON(&req)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	input := make(chan string)
+	output := make(chan string)
+
+	go func() {
+		err := executor.ExecuteInteractiveCode(ctx, req, input, output)
+		if err != nil {
+			log.Println(err)
+			conn.WriteMessage(websocket.TextMessage, []byte("Execution error: "+err.Error()))
+		}
+		close(output)
+	}()
+
+	// Handle incoming messages (user input)
+	go func() {
+		for {
+			_, message, err := conn.ReadMessage()
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			input <- string(message)
+		}
+	}()
+
+	// Send output back to the client
+	for line := range output {
+		err := conn.WriteMessage(websocket.TextMessage, []byte(line))
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
 }

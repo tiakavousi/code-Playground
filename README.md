@@ -17,9 +17,24 @@
 
 ## Build
 ```
-docker build -t playground-backend . -f Dockerfile.backend
-docker run -d -p8080:8080 --memory=512m --cpu-shares=512 --security-opt=no-new-privileges:true --cap-drop=ALL --read-only playground-backend
+docker-compose up -d --build
 ```
+
+## Test
+```
+# Browse
+http://127.0.0.1:3000/
+# Or
+$ brew install websocat
+$ websocat ws://localhost:8080/execute
+{"language":"python","code":"name = input('Enter your name: ')\nprint(f'Hello, {name}!')"}
+```
+
+## Tear Down
+```
+docker-compose down --rmi all
+```
+
 
 ## License
 Code released under the [MIT License](https://github.com/tiakavousi/codeplayground/blob/main/LICENSE.md).

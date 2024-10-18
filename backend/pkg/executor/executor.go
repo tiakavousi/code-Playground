@@ -1,11 +1,16 @@
 package executor
 
 import (
+	"bufio"
+	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
+	"time"
 )
 
 // ExecRequest defines the input for code execution
@@ -14,91 +19,140 @@ type ExecRequest struct {
 	Code     string `json:"code"`
 }
 
-// ExecuteCode runs the submitted code and returns the output or an error
-func ExecuteCode(req ExecRequest) (string, error) {
+// ExecuteInteractiveCode runs the submitted code and supports interactive I/O
+func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan string, output chan<- string) error {
 	var cmd *exec.Cmd
-	var output []byte
 	var err error
 
 	switch req.Language {
 	case "python":
-		// Run Python code directly
-		cmd = exec.Command("python3", "-c", req.Code)
+		cmd = exec.CommandContext(ctx, "python3", "-c", req.Code)
 	case "javascript":
-		// Run JavaScript using Node.js
-		cmd = exec.Command("node", "-e", req.Code)
+		cmd = exec.CommandContext(ctx, "node", "-e", req.Code)
 	case "bash":
-		// Run Bash script
-		cmd = exec.Command("bash", "-c", req.Code)
+		cmd = exec.CommandContext(ctx, "bash", "-c", req.Code)
 	case "java":
-		// Handle Java by compiling and running
 		file := "Main.java"
 		err = ioutil.WriteFile(file, []byte(req.Code), 0644)
 		if err != nil {
-			return "", err
+			return err
 		}
 		defer os.Remove(file)
 
-		// Compile Java code
-		cmd = exec.Command("javac", file)
-		if err = cmd.Run(); err != nil {
-			return "", err
+		compileCmd := exec.CommandContext(ctx, "javac", file)
+		if err = compileCmd.Run(); err != nil {
+			return err
 		}
 
-		// Run the compiled Java program
-		cmd = exec.Command("java", "Main")
-
+		cmd = exec.CommandContext(ctx, "java", "Main")
 	case "c":
-		// Handle C by compiling and running
 		sourceFile := "main.c"
 		err = ioutil.WriteFile(sourceFile, []byte(req.Code), 0644)
 		if err != nil {
-			return "", err
+			return err
 		}
 		defer os.Remove(sourceFile)
 
-		// Compile C code
 		binaryFile := filepath.Join(os.TempDir(), "main_c")
-		cmd = exec.Command("gcc", sourceFile, "-o", binaryFile)
-		compileOutput, err := cmd.CombinedOutput()
-		if err != nil {
-			return string(compileOutput), fmt.Errorf("compilation error: %v", err)
+		compileCmd := exec.CommandContext(ctx, "gcc", sourceFile, "-o", binaryFile)
+		if compileOutput, err := compileCmd.CombinedOutput(); err != nil {
+			return fmt.Errorf("compilation error: %v\n%s", err, compileOutput)
 		}
 
-		// Run the compiled binary
-		cmd = exec.Command(binaryFile)
-		defer os.Remove(binaryFile) // Clean up binary after execution
-
+		cmd = exec.CommandContext(ctx, binaryFile)
+		defer os.Remove(binaryFile)
 	case "cpp":
-		// Handle C++ by compiling and running
 		sourceFile := "main.cpp"
 		err = ioutil.WriteFile(sourceFile, []byte(req.Code), 0644)
 		if err != nil {
-			return "", err
+			return err
 		}
 		defer os.Remove(sourceFile)
 
-		// Compile C++ code
 		binaryFile := filepath.Join(os.TempDir(), "main_cpp")
-		cmd = exec.Command("g++", sourceFile, "-o", binaryFile)
-		compileOutput, err := cmd.CombinedOutput()
-		if err != nil {
-			return string(compileOutput), fmt.Errorf("compilation error: %v", err)
+		compileCmd := exec.CommandContext(ctx, "g++", sourceFile, "-o", binaryFile)
+		if compileOutput, err := compileCmd.CombinedOutput(); err != nil {
+			return fmt.Errorf("compilation error: %v\n%s", err, compileOutput)
 		}
 
-		// Run the compiled binary
-		cmd = exec.Command(binaryFile)
-		defer os.Remove(binaryFile) // Clean up binary after execution
-
+		cmd = exec.CommandContext(ctx, binaryFile)
+		defer os.Remove(binaryFile)
 	default:
-		return "", fmt.Errorf("unsupported language: %s", req.Language)
+		return fmt.Errorf("unsupported language: %s", req.Language)
 	}
 
-	// Capture the output from running the code
-	output, err = cmd.CombinedOutput()
+	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		return string(output), err
+		return err
 	}
 
-	return string(output), nil
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	go func() {
+		scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
+		for scanner.Scan() {
+			output <- scanner.Text()
+		}
+	}()
+
+	go func() {
+		for inputLine := range input {
+			fmt.Fprintln(stdin, inputLine)
+		}
+		stdin.Close()
+	}()
+
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+
+	select {
+	case <-ctx.Done():
+		if err := cmd.Process.Kill(); err != nil {
+			return fmt.Errorf("failed to kill process: %v", err)
+		}
+		return ctx.Err()
+	case err := <-done:
+		return err
+	}
+}
+
+// ExecuteCode runs the submitted code and returns the output or an error (non-interactive version)
+func ExecuteCode(req ExecRequest) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	output := make(chan string)
+	input := make(chan string)
+	defer close(input)
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- ExecuteInteractiveCode(ctx, req, input, output)
+	}()
+
+	var result strings.Builder
+	for {
+		select {
+		case line := <-output:
+			result.WriteString(line + "\n")
+		case err := <-errCh:
+			return result.String(), err
+		case <-ctx.Done():
+			return result.String(), ctx.Err()
+		}
+	}
 }
