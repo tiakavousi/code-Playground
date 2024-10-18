@@ -15,5 +15,11 @@
 - C (compiled using gcc)
 - C++ (compiled using g++)
 
+## Build
+```
+docker build -t playground-backend . -f Dockerfile.backend
+docker run -d -p8080:8080 --memory=512m --cpu-shares=512 --security-opt=no-new-privileges:true --cap-drop=ALL --read-only playground-backend
+```
+
 ## License
 Code released under the [MIT License](https://github.com/tiakavousi/codeplayground/blob/main/LICENSE.md).
