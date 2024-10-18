@@ -26,22 +26,15 @@ func main() {
 	router.Use(gin.Recovery())
 
 	// Enable CORS with custom configuration
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"}, // Allow your frontend's origin
-		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Upgrade", "Connection"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
-
-	// Handle OPTIONS preflight request for /execute
-	router.OPTIONS("/execute", func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Upgrade, Connection")
-		c.Status(http.StatusOK)
-	})
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"*"}
+	config.AllowMethods = []string{"GET", "POST", "OPTIONS"}
+	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization", "Upgrade", "Connection"}
+	config.ExposeHeaders = []string{"Content-Length"}
+	config.AllowCredentials = true
+	config.MaxAge = 12 * time.Hour
+	config.AllowWebSockets = true
+	router.Use(cors.New(config))
 
 	// WebSocket route for interactive code execution
 	router.GET("/execute", func(c *gin.Context) {

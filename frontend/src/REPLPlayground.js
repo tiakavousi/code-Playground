@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const REPLPlayground = () => {
+const REPLPlayground = ({ wsUrl }) => {
     const [code, setCode] = useState('');
     const [language, setLanguage] = useState('python');
     const [output, setOutput] = useState('');
@@ -24,7 +24,7 @@ const REPLPlayground = () => {
         setError(null);
 
         try {
-            ws.current = new WebSocket('ws://localhost:8080/execute');
+            ws.current = new WebSocket(`ws://${wsUrl}/execute`);
 
             ws.current.onopen = () => {
                 console.log('WebSocket connection established');
