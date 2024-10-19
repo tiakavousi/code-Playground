@@ -32,7 +32,131 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+/* REPLPlayground Styles */
+.repl-container {
+  --accent-color: #007bff;
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --input-bg: #f0f0f0;
+
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.repl-container.dark-mode {
+  --bg-color: #1e1e1e;
+  --text-color: #ffffff;
+  --input-bg: #2d2d2d;
+}
+
+.repl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.repl-title {
+  margin: 0;
+  color: var(--accent-color);
+}
+
+.repl-controls {
+  display: flex;
+  align-items: center;
+}
+
+.repl-select,
+.repl-textarea,
+.repl-button,
+.repl-output,
+.repl-input {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--accent-color);
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.repl-textarea {
+  resize: vertical;
+}
+
+.repl-button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.repl-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.repl-output {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  height: 200px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.repl-input-form {
+  display: flex;
+  margin-top: 10px;
+}
+
+.repl-input {
+  flex: 1;
+  border-radius: 5px 0 0 5px;
+  margin-bottom: 0;
+}
+
+.repl-submit-button {
+  padding: 10px;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 0 5px 5px 0;
+}
+
+.repl-submit-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.repl-theme-toggle {
+  padding: 5px 10px;
+  background-color: var(--text-color);
+  color: var(--bg-color);
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+.repl-color-picker {
+  display: flex;
+  align-items: center;
+}
+
+.repl-color-picker-label {
+  margin-right: 10px;
+  color: var(--text-color);
 }

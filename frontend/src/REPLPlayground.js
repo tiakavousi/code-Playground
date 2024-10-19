@@ -7,16 +7,22 @@ const REPLPlayground = ({ wsUrl }) => {
     const [isRunning, setIsRunning] = useState(false);
     const [input, setInput] = useState('');
     const [error, setError] = useState(null);
+    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [accentColor, setAccentColor] = useState('#007bff');
     const outputRef = useRef(null);
     const ws = useRef(null);
 
+    // useEffect(() => {
+    //     return () => {
+    //         if (ws.current) {
+    //             ws.current.close();
+    //         }
+    //     };
+    // }, []);
+
     useEffect(() => {
-        return () => {
-            if (ws.current) {
-                ws.current.close();
-            }
-        };
-    }, []);
+        document.documentElement.style.setProperty('--accent-color', accentColor);
+    }, [accentColor]);
 
     const handleExecute = async () => {
         setIsRunning(true);
@@ -65,84 +71,82 @@ const REPLPlayground = ({ wsUrl }) => {
         }
     };
 
+    const toggleTheme = () => {
+        setIsDarkMode(!isDarkMode);
+    };
+
+    const handleColorChange = (e) => {
+        setAccentColor(e.target.value);
+    };
+
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-            <h1 style={{ textAlign: 'center' }}>Interactive REPL Playground</h1>
+        <div className={`repl-container ${isDarkMode ? 'dark-mode' : ''}`}>
+            <div className="repl-header">
+                <h1 className="repl-title">Interactive REPL Playground</h1>
+                <div className="repl-controls">
+                    <button onClick={toggleTheme} className="repl-theme-toggle">
+                        {isDarkMode ? '☀️ Light' : '🌙 Dark'}
+                    </button>
+                    <div className="repl-color-picker">
+                        <label htmlFor="colorPicker" className="repl-color-picker-label">Accent:</label>
+                        <input
+                            type="color"
+                            id="colorPicker"
+                            value={accentColor}
+                            onChange={handleColorChange}
+                        />
+                    </div>
+                </div>
+            </div>
             {error && (
                 <div style={{ color: 'red', marginBottom: '20px' }}>
                     {error}
                 </div>
             )}
-            <div style={{ marginBottom: '20px' }}>
-                <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    style={{ width: '100%', padding: '10px' }}
-                >
-                    <option value="c">C</option>
-                    <option value="cpp">C++</option>
-                    <option value="python">Python</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="java">Java</option>
-                    <option value="bash">Bash</option>
-                </select>
-            </div>
+            <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="repl-select"
+            >
+                <option value="c">C</option>
+                <option value="cpp">C++</option>
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript</option>
+                <option value="java">Java</option>
+                <option value="bash">Bash</option>
+            </select>
             <textarea
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Enter your code here..."
                 rows={10}
-                style={{ width: '100%', marginBottom: '20px', padding: '10px' }}
+                className="repl-textarea"
             />
             <button
                 onClick={handleExecute}
                 disabled={isRunning}
-                style={{
-                    width: '100%',
-                    padding: '10px',
-                    backgroundColor: isRunning ? '#cccccc' : '#007bff',
-                    color: 'white',
-                    border: 'none',
-                    cursor: isRunning ? 'not-allowed' : 'pointer'
-                }}
+                className="repl-button"
             >
                 {isRunning ? 'Running...' : 'Run'}
             </button>
-            <div style={{ marginTop: '20px' }}>
-                <h2>Output:</h2>
-                <pre
-                    ref={outputRef}
-                    style={{
-                        backgroundColor: '#f0f0f0',
-                        padding: '10px',
-                        whiteSpace: 'pre-wrap',
-                        wordWrap: 'break-word',
-                        height: '200px',
-                        overflowY: 'auto'
-                    }}
-                >
+            <div>
+                <h2 style={{ color: accentColor }}>Output:</h2>
+                <pre ref={outputRef} className="repl-output">
                     {output}
                 </pre>
             </div>
-            <form onSubmit={handleInputSubmit} style={{ marginTop: '20px' }}>
+            <form onSubmit={handleInputSubmit} className="repl-input-form">
                 <input
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Enter input here..."
-                    style={{ width: '70%', padding: '10px' }}
+                    className="repl-input"
                 />
                 <button
                     type="submit"
                     disabled={!isRunning}
-                    style={{
-                        width: '30%',
-                        padding: '10px',
-                        backgroundColor: isRunning ? '#28a745' : '#cccccc',
-                        color: 'white',
-                        border: 'none',
-                        cursor: isRunning ? 'pointer' : 'not-allowed'
-                    }}
+                    className="repl-submit-button"
                 >
                     Send Input
                 </button>
