@@ -14,7 +14,7 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true // Be careful with this in production
+		return true
 	},
 }
 
@@ -70,51 +70,78 @@ func main() {
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		log.Println("WebSocket upgrade error:", err)
 		return
 	}
 	defer conn.Close()
 
-	// Read the initial request
 	var req executor.ExecRequest
 	err = conn.ReadJSON(&req)
 	if err != nil {
-		log.Println(err)
+		log.Println("JSON read error:", err)
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
 
 	input := make(chan string)
 	output := make(chan string)
+	done := make(chan struct{})
+	writeChannel := make(chan string)
 
+	// Goroutine for writing to WebSocket
 	go func() {
-		err := executor.ExecuteInteractiveCode(ctx, req, input, output)
-		if err != nil {
-			log.Println(err)
-			conn.WriteMessage(websocket.TextMessage, []byte("Execution error: "+err.Error()))
+		for {
+			select {
+			case message := <-writeChannel:
+				err := conn.WriteMessage(websocket.TextMessage, []byte(message))
+				if err != nil {
+					log.Println("WebSocket write error:", err)
+					return
+				}
+			case <-done:
+				return
+			}
 		}
-		close(output)
 	}()
 
-	// Handle incoming messages (user input)
+	// Goroutine for executing code
+	go func() {
+		defer close(done)
+		err := executor.ExecuteInteractiveCode(ctx, req, input, output)
+		if err != nil {
+			writeChannel <- "Execution error: " + err.Error()
+		}
+	}()
+
+	// Goroutine for reading from WebSocket
 	go func() {
 		for {
 			_, message, err := conn.ReadMessage()
 			if err != nil {
-				log.Println(err)
+				log.Println("WebSocket read error:", err)
+				cancel() // Cancel the context to stop execution
 				return
 			}
-			input <- string(message)
+			select {
+			case input <- string(message):
+			case <-done:
+				return
+			}
 		}
 	}()
 
-	// Send output back to the client
-	for line := range output {
-		err := conn.WriteMessage(websocket.TextMessage, []byte(line))
-		if err != nil {
-			log.Println(err)
+	// Main loop for handling output
+	for {
+		select {
+		case line := <-output:
+			select {
+			case writeChannel <- line:
+			case <-done:
+				return
+			}
+		case <-done:
 			return
 		}
 	}

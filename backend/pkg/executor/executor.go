@@ -24,6 +24,11 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 	var cmd *exec.Cmd
 	var err error
 
+	tempDir := os.Getenv("TEMP_DIR")
+	if tempDir == "" {
+		tempDir = os.TempDir()
+	}
+
 	switch req.Language {
 	case "python":
 		cmd = exec.CommandContext(ctx, "python3", "-c", req.Code)
@@ -32,49 +37,40 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 	case "bash":
 		cmd = exec.CommandContext(ctx, "bash", "-c", req.Code)
 	case "java":
-		file := "Main.java"
-		err = ioutil.WriteFile(file, []byte(req.Code), 0644)
-		if err != nil {
+		// Handle Java compilation and execution
+		file := filepath.Join(tempDir, "Main.java")
+		if err = ioutil.WriteFile(file, []byte(req.Code), 0644); err != nil {
 			return err
 		}
 		defer os.Remove(file)
-
-		compileCmd := exec.CommandContext(ctx, "javac", file)
-		if err = compileCmd.Run(); err != nil {
-			return err
+		if err = exec.CommandContext(ctx, "javac", file).Run(); err != nil {
+			return fmt.Errorf("compilation error: %v", err)
 		}
-
-		cmd = exec.CommandContext(ctx, "java", "Main")
+		cmd = exec.CommandContext(ctx, "java", "-cp", tempDir, "Main")
 	case "c":
-		sourceFile := "main.c"
-		err = ioutil.WriteFile(sourceFile, []byte(req.Code), 0644)
-		if err != nil {
+		// Handle C compilation and execution
+		sourceFile := filepath.Join(tempDir, "main.c")
+		if err = ioutil.WriteFile(sourceFile, []byte(req.Code), 0644); err != nil {
 			return err
 		}
 		defer os.Remove(sourceFile)
-
-		binaryFile := filepath.Join(os.TempDir(), "main_c")
-		compileCmd := exec.CommandContext(ctx, "gcc", sourceFile, "-o", binaryFile)
-		if compileOutput, err := compileCmd.CombinedOutput(); err != nil {
-			return fmt.Errorf("compilation error: %v\n%s", err, compileOutput)
+		binaryFile := filepath.Join(tempDir, "main_c")
+		if err = exec.CommandContext(ctx, "gcc", sourceFile, "-o", binaryFile).Run(); err != nil {
+			return fmt.Errorf("compilation error: %v", err)
 		}
-
 		cmd = exec.CommandContext(ctx, binaryFile)
 		defer os.Remove(binaryFile)
 	case "cpp":
-		sourceFile := "main.cpp"
-		err = ioutil.WriteFile(sourceFile, []byte(req.Code), 0644)
-		if err != nil {
+		// Handle Cpp compilation and execution
+		sourceFile := filepath.Join(tempDir, "main.cpp")
+		if err = ioutil.WriteFile(sourceFile, []byte(req.Code), 0644); err != nil {
 			return err
 		}
 		defer os.Remove(sourceFile)
-
-		binaryFile := filepath.Join(os.TempDir(), "main_cpp")
-		compileCmd := exec.CommandContext(ctx, "g++", sourceFile, "-o", binaryFile)
-		if compileOutput, err := compileCmd.CombinedOutput(); err != nil {
-			return fmt.Errorf("compilation error: %v\n%s", err, compileOutput)
+		binaryFile := filepath.Join(tempDir, "main_cpp")
+		if err = exec.CommandContext(ctx, "g++", sourceFile, "-o", binaryFile).Run(); err != nil {
+			return fmt.Errorf("compilation error: %v", err)
 		}
-
 		cmd = exec.CommandContext(ctx, binaryFile)
 		defer os.Remove(binaryFile)
 	default:
