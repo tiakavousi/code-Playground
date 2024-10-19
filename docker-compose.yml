@@ -16,8 +16,10 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+      - /app/temp:rw,exec,nosuid,nodev # writable temporary directory that the application can use
     environment:
       - GIN_MODE=release
+      - TEMP_DIR=/app/temp
 
   frontend:
     build:
