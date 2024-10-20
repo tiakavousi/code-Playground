@@ -2,11 +2,11 @@ FROM node:16-alpine
 
 WORKDIR /app
 
-COPY ./Frontend/package*.json ./
+COPY ./frontend/package*.json ./
 
 RUN npm install
 
-COPY ./Frontend/ .
+COPY ./frontend/ .
 
 RUN npm run build
 

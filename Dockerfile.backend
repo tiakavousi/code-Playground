@@ -16,10 +16,10 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-COPY ./Backend/go.mod ./Backend/go.sum ./
+COPY ./backend/go.mod ./backend/go.sum ./
 RUN go mod download
 
-COPY ./Backend/ .
+COPY ./backend/ .
 
 # Build the Go app
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o code-playground ./cmd/main.go
