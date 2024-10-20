@@ -1,4 +1,6 @@
 # Binaries for programs and plugins
+covprofile
+backend/covprofile
 *.so
 *.dylib
 *.orig # Git generated files for conflicting

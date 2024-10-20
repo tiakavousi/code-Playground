@@ -20,7 +20,7 @@ jobs:
         cd backend && go mod tidy
     - name: Run Unit tests
       run: |
-        cd backend && go test -race -covermode atomic -coverprofile=covprofile ./pkg/executor/...
+        cd backend && go test -race -covermode atomic -coverprofile=covprofile -timeout 1m ./pkg/executor/...
     - name: Install goveralls
       run: go install github.com/mattn/goveralls@latest
     - name: Send coverage
