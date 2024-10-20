@@ -7,6 +7,7 @@ import (
 	"io"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -18,21 +19,30 @@ type ExecRequest struct {
 
 // ExecuteInteractiveCode runs the submitted code and supports interactive I/O
 func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan string, output chan<- string) error {
-	var err error
-
-	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
 	// Generate a unique container name
 	containerName := fmt.Sprintf("code-exec-%d", time.Now().UnixNano())
 
-	// Construct the Docker command with resource limits and your Docker image
-	dockerCmd := exec.CommandContext(timeoutCtx, "docker", "run", "--rm",
-		"--name", containerName, // Add a name to the container
-		"-i", "--cpus=0.5", // Limit CPU usage to 0.5 cores
-		"-m", "100m", // Limit memory usage to 100MB
-		"phantasm/busybox", // Use the correct image name
-		strings.ToLower(req.Language), "-c", req.Code)
+	// Prepare Docker command based on language
+	var dockerCmd *exec.Cmd
+	switch strings.ToLower(req.Language) {
+	case "java":
+		dockerCmd = prepareJavaCommand(timeoutCtx, containerName, req.Code)
+	case "c":
+		dockerCmd = prepareCCommand(timeoutCtx, containerName, req.Code)
+	case "c++", "cpp":
+		dockerCmd = prepareCppCommand(timeoutCtx, containerName, req.Code)
+	default:
+		// For interpreted languages, use the existing approach
+		dockerCmd = exec.CommandContext(timeoutCtx, "docker", "run", "--rm",
+			"--name", containerName,
+			"-i", "--cpus=0.5",
+			"-m", "100m",
+			"phantasm/busybox",
+			strings.ToLower(req.Language), "-c", req.Code)
+	}
 
 	stdin, err := dockerCmd.StdinPipe()
 	if err != nil {
@@ -49,50 +59,114 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 		return fmt.Errorf("error creating stderr pipe: %w", err)
 	}
 
-	done := make(chan error, 1)
+	// Start the Docker command
+	if err := dockerCmd.Start(); err != nil {
+		output <- "Error starting Docker command: " + err.Error()
+		return err
+	}
 
-	// Start the Docker command in a separate goroutine
+	// Use a WaitGroup to manage goroutines
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	// Goroutine for handling stdout and stderr
 	go func() {
-		if err := dockerCmd.Start(); err != nil {
-			output <- "Error starting Docker command: " + err.Error()
-			return
-		}
-
-		// Wait for the command to finish
-		done <- dockerCmd.Wait()
-	}()
-
-	go func() {
+		defer wg.Done()
 		scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
 		for scanner.Scan() {
-			output <- scanner.Text()
+			select {
+			case output <- scanner.Text():
+			case <-timeoutCtx.Done():
+				return
+			}
 		}
 	}()
 
+	// Goroutine for handling stdin
 	go func() {
-		for inputLine := range input {
-			fmt.Fprintln(stdin, inputLine)
+		defer wg.Done()
+		for {
+			select {
+			case inputLine, ok := <-input:
+				if !ok {
+					return
+				}
+				_, err := fmt.Fprintln(stdin, inputLine)
+				if err != nil {
+					output <- "Error writing to stdin: " + err.Error()
+					return
+				}
+			case <-timeoutCtx.Done():
+				return
+			}
 		}
-		stdin.Close()
+	}()
+
+	// Wait for the command to finish or the context to be done
+	done := make(chan error, 1)
+	go func() {
+		done <- dockerCmd.Wait()
 	}()
 
 	// Wait for the command to finish or the context to be done
 	select {
 	case <-timeoutCtx.Done():
-		fmt.Println("Timeout reached. Killing container...")
-
-		// Kill the Docker container using its name
+		// Force kill the container
 		killCmd := exec.Command("docker", "kill", containerName)
 		if err := killCmd.Run(); err != nil {
-			fmt.Printf("Failed to kill container: %v\n", err)
+			output <- fmt.Sprintf("Failed to kill container: %v", err)
 		} else {
-			fmt.Println("Container killed successfully")
+			output <- "Container killed successfully"
 		}
+
+		// Wait for goroutines to finish
+		wg.Wait()
 
 		return timeoutCtx.Err()
 	case err := <-done:
+		// Wait for goroutines to finish
+		wg.Wait()
 		return err
 	}
+}
+
+func prepareJavaCommand(ctx context.Context, containerName, code string) *exec.Cmd {
+	return exec.CommandContext(ctx, "docker", "run", "--rm",
+		"--name", containerName,
+		"-i", "--cpus=0.5", "-m", "100m",
+		"-v", "/tmp:/tmp",
+		"phantasm/busybox",
+		"bash", "-c", fmt.Sprintf(`
+			echo '%s' > /tmp/Main.java &&
+			javac /tmp/Main.java &&
+			java -cp /tmp Main
+		`, code))
+}
+
+func prepareCCommand(ctx context.Context, containerName, code string) *exec.Cmd {
+	return exec.CommandContext(ctx, "docker", "run", "--rm",
+		"--name", containerName,
+		"-i", "--cpus=0.5", "-m", "100m",
+		"-v", "/tmp:/tmp",
+		"phantasm/busybox",
+		"bash", "-c", fmt.Sprintf(`
+			echo '%s' > /tmp/main.c &&
+			gcc /tmp/main.c -o /tmp/main &&
+			/tmp/main
+		`, code))
+}
+
+func prepareCppCommand(ctx context.Context, containerName, code string) *exec.Cmd {
+	return exec.CommandContext(ctx, "docker", "run", "--rm",
+		"--name", containerName,
+		"-i", "--cpus=0.5", "-m", "100m",
+		"-v", "/tmp:/tmp",
+		"phantasm/busybox",
+		"bash", "-c", fmt.Sprintf(`
+			echo '%s' > /tmp/main.cpp &&
+			g++ /tmp/main.cpp -o /tmp/main &&
+			/tmp/main
+		`, code))
 }
 
 // ExecuteCode runs the submitted code and returns the output or an error (non-interactive version)
@@ -100,7 +174,7 @@ func ExecuteCode(req ExecRequest) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	output := make(chan string)
+	output := make(chan string, 1)
 	input := make(chan string)
 	defer close(input)
 
