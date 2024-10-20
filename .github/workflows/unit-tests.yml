@@ -1,42 +1,29 @@
 name: Quality
 on: [push, pull_request]
-
 jobs:
-  dind-job:
+  test:
+    name: Test with Coverage
     runs-on: ubuntu-latest
-    services:
-      dind:
-        image: docker:dind
-        options: --privileged
-        ports:
-          - 2375:2375
-
     steps:
-    - name: Check out code
-      uses: actions/checkout@v2
-
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v1
-      with:
-        driver: docker
-        driver-opts: |
-          network=host
-
-    - name: Use Docker
-      env:
-        DOCKER_HOST: tcp://localhost:2375
-      run: |
-        docker version
-        docker pull phantasm/busybox
-        # Add your Docker commands here
-
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
         go-version: '1.22.3'
-
-    - name: Run tests
-      env:
-        DOCKER_HOST: tcp://localhost:2375
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Pull executor Docker image
+      run: docker pull phantasm/busybox
+    - name: Install dependencies
+      run: |
+        cd backend && go mod tidy
+    - name: Run Unit tests
       run: |
         cd backend && go test -race -covermode atomic -coverprofile=covprofile -timeout 30s ./pkg/executor/...
+    - name: Install goveralls
+      run: go install github.com/mattn/goveralls@latest
+    - name: Send coverage
+      env:
+        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: cd backend && goveralls -coverprofile=covprofile -service=github

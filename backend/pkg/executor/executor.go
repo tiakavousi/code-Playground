@@ -41,8 +41,8 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 		// For interpreted languages, use the existing approach
 		dockerCmd = exec.CommandContext(timeoutCtx, "docker", "run", "--rm",
 			"--name", containerName,
-			"-i", "--cpus=0.15",
-			"-m", "100m",
+			"-i", "--cpus=1",
+			"-m", "300m",
 			dockerName,
 			strings.ToLower(req.Language), "-c", req.Code)
 	}
@@ -136,8 +136,7 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 func prepareJavaCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
 		"--name", containerName,
-		"-i", "--cpus=0.5", "-m", "100m",
-		"-v", "/tmp:/tmp",
+		"-i", "--cpus=1", "-m", "300m",
 		dockerName,
 		"bash", "-c", fmt.Sprintf(`
 			echo '%s' > /tmp/Main.java &&
@@ -149,8 +148,7 @@ func prepareJavaCommand(ctx context.Context, containerName, dockerName, code str
 func prepareCCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
 		"--name", containerName,
-		"-i", "--cpus=0.5", "-m", "100m",
-		"-v", "/tmp:/tmp",
+		"-i", "--cpus=1", "-m", "300m",
 		dockerName,
 		"bash", "-c", fmt.Sprintf(`
 			echo '%s' > /tmp/main.c &&
@@ -162,8 +160,7 @@ func prepareCCommand(ctx context.Context, containerName, dockerName, code string
 func prepareCppCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
 		"--name", containerName,
-		"-i", "--cpus=0.5", "-m", "100m",
-		"-v", "/tmp:/tmp",
+		"-i", "--cpus=1", "-m", "300m",
 		dockerName,
 		"bash", "-c", fmt.Sprintf(`
 			echo '%s' > /tmp/main.cpp &&
@@ -175,7 +172,7 @@ func prepareCppCommand(ctx context.Context, containerName, dockerName, code stri
 func prepareJavaScriptCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
 		"--name", containerName,
-		"-i", "--cpus=0.5", "-m", "100m",
+		"-i", "--cpus=1", "-m", "300m",
 		dockerName,
 		"node", "-e", code)
 }
