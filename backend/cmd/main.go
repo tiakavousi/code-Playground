@@ -88,45 +88,33 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	input := make(chan string)
 	output := make(chan string)
 	done := make(chan struct{})
-	writeChannel := make(chan string)
-
-	// Goroutine for writing to WebSocket
-	go func() {
-		for {
-			select {
-			case message := <-writeChannel:
-				err := conn.WriteMessage(websocket.TextMessage, []byte(message))
-				if err != nil {
-					log.Println("WebSocket write error:", err)
-					return
-				}
-			case <-done:
-				return
-			}
-		}
-	}()
 
 	// Goroutine for executing code
 	go func() {
 		defer close(done)
 		err := executor.ExecuteInteractiveCode(ctx, req, input, output)
 		if err != nil {
-			writeChannel <- "Execution error: " + err.Error()
+			select {
+			case output <- "Execution error: " + err.Error():
+			case <-ctx.Done():
+			}
 		}
 	}()
 
 	// Goroutine for reading from WebSocket
 	go func() {
+		defer cancel() // Ensure context is cancelled when this goroutine exits
 		for {
 			_, message, err := conn.ReadMessage()
 			if err != nil {
-				log.Println("WebSocket read error:", err)
-				cancel() // Cancel the context to stop execution
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					log.Printf("WebSocket read error: %v", err)
+				}
 				return
 			}
 			select {
 			case input <- string(message):
-			case <-done:
+			case <-ctx.Done():
 				return
 			}
 		}
@@ -136,12 +124,24 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case line := <-output:
-			select {
-			case writeChannel <- line:
-			case <-done:
+			err := conn.WriteMessage(websocket.TextMessage, []byte(line))
+			if err != nil {
+				log.Printf("WebSocket write error: %v", err)
 				return
 			}
 		case <-done:
+			// Gracefully close the WebSocket connection
+			err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if err != nil {
+				log.Printf("Error during closing WebSocket: %v", err)
+			}
+			return
+		case <-ctx.Done():
+			// Gracefully close the WebSocket connection on timeout
+			err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Execution timeout"))
+			if err != nil {
+				log.Printf("Error during closing WebSocket on timeout: %v", err)
+			}
 			return
 		}
 	}
