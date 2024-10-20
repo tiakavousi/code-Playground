@@ -19,7 +19,7 @@ type ExecRequest struct {
 
 // ExecuteInteractiveCode runs the submitted code and supports interactive I/O
 func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan string, output chan<- string) error {
-	timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
 	// Generate a unique container name
@@ -41,8 +41,8 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 		// For interpreted languages, use the existing approach
 		dockerCmd = exec.CommandContext(timeoutCtx, "docker", "run", "--rm",
 			"--name", containerName,
-			"-i", "--cpus=1",
-			"-m", "300m",
+			"-i", "--cpus=0.5",
+			"-m", "100m",
 			dockerName,
 			strings.ToLower(req.Language), "-c", req.Code)
 	}
@@ -63,12 +63,9 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 	}
 
 	// Start the Docker command
-	fmt.Printf("Running Docker command: %v\n", dockerCmd.String())
 	if err := dockerCmd.Start(); err != nil {
-		output <- "Error starting Docker command: " + err.Error()
 		return err
 	}
-	fmt.Println("Docker command started successfully")
 
 	// Use a WaitGroup to manage goroutines
 	var wg sync.WaitGroup
@@ -138,7 +135,7 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 func prepareJavaCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
 		"--name", containerName,
-		"-i", "--cpus=1", "-m", "300m",
+		"-i", "--cpus=0.5", "-m", "100m",
 		dockerName,
 		"bash", "-c", fmt.Sprintf(`
 			echo '%s' > /tmp/Main.java &&
@@ -150,7 +147,7 @@ func prepareJavaCommand(ctx context.Context, containerName, dockerName, code str
 func prepareCCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
 		"--name", containerName,
-		"-i", "--cpus=1", "-m", "300m",
+		"-i", "--cpus=0.5", "-m", "100m",
 		dockerName,
 		"bash", "-c", fmt.Sprintf(`
 			echo '%s' > /tmp/main.c &&
@@ -162,7 +159,7 @@ func prepareCCommand(ctx context.Context, containerName, dockerName, code string
 func prepareCppCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
 		"--name", containerName,
-		"-i", "--cpus=1", "-m", "300m",
+		"-i", "--cpus=0.5", "-m", "100m",
 		dockerName,
 		"bash", "-c", fmt.Sprintf(`
 			echo '%s' > /tmp/main.cpp &&
@@ -184,8 +181,8 @@ func ExecuteCode(req ExecRequest) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	output := make(chan string, 1)
-	input := make(chan string)
+	output := make(chan string, 5)
+	input := make(chan string, 5)
 	defer close(input)
 
 	errCh := make(chan error, 1)
