@@ -13,7 +13,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Install dependencies
       run: |
-        go mod tidy
+        cd backend && go mod tidy
     - name: Run Unit tests
       run: |
         cd backend && go test -race -covermode atomic -coverprofile=covprofile ./...
@@ -22,9 +22,4 @@ jobs:
     - name: Send coverage
       env:
         COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: goveralls -coverprofile=covprofile -service=github
-    # or use shogo82148/actions-goveralls
-    # - name: Send coverage
-    #   uses: shogo82148/actions-goveralls@v1
-    #   with:
-    #     path-to-profile: covprofile
+      run: cd backend && goveralls -coverprofile=covprofile -service=github
