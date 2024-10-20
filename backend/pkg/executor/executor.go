@@ -24,7 +24,7 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 
 	// Generate a unique container name
 	containerName := fmt.Sprintf("code-exec-%d", time.Now().UnixNano())
-	dockerName := "phantasm/busybox"
+	dockerName := "tayebe/repl"
 
 	// Prepare Docker command based on language
 	var dockerCmd *exec.Cmd
