@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/tiakavousi/codeplayground/badge.svg?branch=main)](https://coveralls.io/github/tiakavousi/codeplayground?branch=main)
+
 # CodePlayground
 **CodePlayground** is a web-based multi-language code execution service that allows users to submit code in various programming languages (Python, JavaScript, Bash, Java, C, C++) and receive output in real-time. The backend is built using Go and leverages the Docker SDK and system compilers for handling different programming languages.
 
