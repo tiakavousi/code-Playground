@@ -7,19 +7,12 @@ services:
       dockerfile: Dockerfile.backend
     ports:
       - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     mem_limit: 512m
     cpu_shares: 512
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    read_only: true
-    tmpfs:
-      - /tmp
-      - /app/temp:rw,exec,nosuid,nodev # writable temporary directory that the application can use
     environment:
-      - GIN_MODE=release
-      - TEMP_DIR=/app/temp
+      - DOCKER_HOST=unix:///var/run/docker.sock
 
   frontend:
     build:

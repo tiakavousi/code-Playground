@@ -1,4 +1,18 @@
-FROM golang:1.22-alpine AS builder
+FROM docker:dind
+
+# Install Go
+RUN apk add --no-cache go
+
+# Install other dependencies
+RUN apk add --no-cache \
+    python3 \
+    nodejs \
+    openjdk11 \
+    gcc \
+    g++ \
+    bash \
+    docker-cli
+
 
 WORKDIR /app
 
@@ -10,26 +24,6 @@ COPY ./Backend/ .
 # Build the Go app
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o code-playground ./cmd/main.go
 
-# Final stage
-FROM alpine:latest
-
-RUN apk add --no-cache \
-    python3 \
-    nodejs \
-    openjdk11 \
-    gcc \
-    g++ \
-    bash
-
-RUN adduser -D -g '' appuser
-
-WORKDIR /app
-COPY --from=builder /app/code-playground .
-
-RUN chown -R appuser:appuser /app
-
-USER appuser
-
 EXPOSE 8080
 
-CMD ["./code-playground"]
+CMD ["dockerd-entrypoint.sh", "./code-playground"]

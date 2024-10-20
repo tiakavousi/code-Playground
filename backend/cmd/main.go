@@ -82,7 +82,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 	defer cancel()
 
 	input := make(chan string)

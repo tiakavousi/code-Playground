@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const REPLPlayground = ({ wsUrl }) => {
     const [code, setCode] = useState('');
-    const [language, setLanguage] = useState('python');
+    const [language, setLanguage] = useState('Python');
     const [output, setOutput] = useState('');
     const [isRunning, setIsRunning] = useState(false);
     const [input, setInput] = useState('');
@@ -110,7 +110,7 @@ const REPLPlayground = ({ wsUrl }) => {
             >
                 <option value="c">C</option>
                 <option value="cpp">C++</option>
-                <option value="python">Python</option>
+                <option value="python3">Python</option>
                 <option value="javascript">JavaScript</option>
                 <option value="java">Java</option>
                 <option value="bash">Bash</option>

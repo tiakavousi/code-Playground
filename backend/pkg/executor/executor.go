@@ -5,10 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -21,80 +18,49 @@ type ExecRequest struct {
 
 // ExecuteInteractiveCode runs the submitted code and supports interactive I/O
 func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan string, output chan<- string) error {
-	var cmd *exec.Cmd
 	var err error
 
-	tempDir := os.Getenv("TEMP_DIR")
-	if tempDir == "" {
-		tempDir = os.TempDir()
-	}
+	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
 
-	switch req.Language {
-	case "python":
-		cmd = exec.CommandContext(ctx, "python3", "-c", req.Code)
-	case "javascript":
-		cmd = exec.CommandContext(ctx, "node", "-e", req.Code)
-	case "bash":
-		cmd = exec.CommandContext(ctx, "bash", "-c", req.Code)
-	case "java":
-		// Handle Java compilation and execution
-		file := filepath.Join(tempDir, "Main.java")
-		if err = ioutil.WriteFile(file, []byte(req.Code), 0644); err != nil {
-			return err
-		}
-		defer os.Remove(file)
-		if err = exec.CommandContext(ctx, "javac", file).Run(); err != nil {
-			return fmt.Errorf("compilation error: %v", err)
-		}
-		cmd = exec.CommandContext(ctx, "java", "-cp", tempDir, "Main")
-	case "c":
-		// Handle C compilation and execution
-		sourceFile := filepath.Join(tempDir, "main.c")
-		if err = ioutil.WriteFile(sourceFile, []byte(req.Code), 0644); err != nil {
-			return err
-		}
-		defer os.Remove(sourceFile)
-		binaryFile := filepath.Join(tempDir, "main_c")
-		if err = exec.CommandContext(ctx, "gcc", sourceFile, "-o", binaryFile).Run(); err != nil {
-			return fmt.Errorf("compilation error: %v", err)
-		}
-		cmd = exec.CommandContext(ctx, binaryFile)
-		defer os.Remove(binaryFile)
-	case "cpp":
-		// Handle Cpp compilation and execution
-		sourceFile := filepath.Join(tempDir, "main.cpp")
-		if err = ioutil.WriteFile(sourceFile, []byte(req.Code), 0644); err != nil {
-			return err
-		}
-		defer os.Remove(sourceFile)
-		binaryFile := filepath.Join(tempDir, "main_cpp")
-		if err = exec.CommandContext(ctx, "g++", sourceFile, "-o", binaryFile).Run(); err != nil {
-			return fmt.Errorf("compilation error: %v", err)
-		}
-		cmd = exec.CommandContext(ctx, binaryFile)
-		defer os.Remove(binaryFile)
-	default:
-		return fmt.Errorf("unsupported language: %s", req.Language)
-	}
+	// Generate a unique container name
+	containerName := fmt.Sprintf("code-exec-%d", time.Now().UnixNano())
 
-	stdin, err := cmd.StdinPipe()
+	// Construct the Docker command with resource limits and your Docker image
+	dockerCmd := exec.CommandContext(timeoutCtx, "docker", "run", "--rm",
+		"--name", containerName, // Add a name to the container
+		"-i", "--cpus=0.5", // Limit CPU usage to 0.5 cores
+		"-m", "100m", // Limit memory usage to 100MB
+		"phantasm/busybox", // Use the correct image name
+		strings.ToLower(req.Language), "-c", req.Code)
+
+	stdin, err := dockerCmd.StdinPipe()
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating stdin pipe: %w", err)
 	}
 
-	stdout, err := cmd.StdoutPipe()
+	stdout, err := dockerCmd.StdoutPipe()
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating stdout pipe: %w", err)
 	}
 
-	stderr, err := cmd.StderrPipe()
+	stderr, err := dockerCmd.StderrPipe()
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating stderr pipe: %w", err)
 	}
 
-	if err := cmd.Start(); err != nil {
-		return err
-	}
+	done := make(chan error, 1)
+
+	// Start the Docker command in a separate goroutine
+	go func() {
+		if err := dockerCmd.Start(); err != nil {
+			output <- "Error starting Docker command: " + err.Error()
+			return
+		}
+
+		// Wait for the command to finish
+		done <- dockerCmd.Wait()
+	}()
 
 	go func() {
 		scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
@@ -110,17 +76,20 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 		stdin.Close()
 	}()
 
-	done := make(chan error, 1)
-	go func() {
-		done <- cmd.Wait()
-	}()
-
+	// Wait for the command to finish or the context to be done
 	select {
-	case <-ctx.Done():
-		if err := cmd.Process.Kill(); err != nil {
-			return fmt.Errorf("failed to kill process: %v", err)
+	case <-timeoutCtx.Done():
+		fmt.Println("Timeout reached. Killing container...")
+
+		// Kill the Docker container using its name
+		killCmd := exec.Command("docker", "kill", containerName)
+		if err := killCmd.Run(); err != nil {
+			fmt.Printf("Failed to kill container: %v\n", err)
+		} else {
+			fmt.Println("Container killed successfully")
 		}
-		return ctx.Err()
+
+		return timeoutCtx.Err()
 	case err := <-done:
 		return err
 	}
@@ -128,7 +97,7 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 
 // ExecuteCode runs the submitted code and returns the output or an error (non-interactive version)
 func ExecuteCode(req ExecRequest) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	output := make(chan string)
