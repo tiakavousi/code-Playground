@@ -24,23 +24,26 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 
 	// Generate a unique container name
 	containerName := fmt.Sprintf("code-exec-%d", time.Now().UnixNano())
+	dockerName := "phantasm/busybox"
 
 	// Prepare Docker command based on language
 	var dockerCmd *exec.Cmd
 	switch strings.ToLower(req.Language) {
 	case "java":
-		dockerCmd = prepareJavaCommand(timeoutCtx, containerName, req.Code)
+		dockerCmd = prepareJavaCommand(timeoutCtx, containerName, dockerName, req.Code)
 	case "c":
-		dockerCmd = prepareCCommand(timeoutCtx, containerName, req.Code)
+		dockerCmd = prepareCCommand(timeoutCtx, containerName, dockerName, req.Code)
 	case "c++", "cpp":
-		dockerCmd = prepareCppCommand(timeoutCtx, containerName, req.Code)
+		dockerCmd = prepareCppCommand(timeoutCtx, containerName, dockerName, req.Code)
+	case "javascript", "js":
+		dockerCmd = prepareJavaScriptCommand(timeoutCtx, containerName, dockerName, req.Code)
 	default:
 		// For interpreted languages, use the existing approach
 		dockerCmd = exec.CommandContext(timeoutCtx, "docker", "run", "--rm",
 			"--name", containerName,
 			"-i", "--cpus=0.5",
 			"-m", "100m",
-			"phantasm/busybox",
+			dockerName,
 			strings.ToLower(req.Language), "-c", req.Code)
 	}
 
@@ -130,12 +133,12 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 	}
 }
 
-func prepareJavaCommand(ctx context.Context, containerName, code string) *exec.Cmd {
+func prepareJavaCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
 		"--name", containerName,
 		"-i", "--cpus=0.5", "-m", "100m",
 		"-v", "/tmp:/tmp",
-		"phantasm/busybox",
+		dockerName,
 		"bash", "-c", fmt.Sprintf(`
 			echo '%s' > /tmp/Main.java &&
 			javac /tmp/Main.java &&
@@ -143,12 +146,12 @@ func prepareJavaCommand(ctx context.Context, containerName, code string) *exec.C
 		`, code))
 }
 
-func prepareCCommand(ctx context.Context, containerName, code string) *exec.Cmd {
+func prepareCCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
 		"--name", containerName,
 		"-i", "--cpus=0.5", "-m", "100m",
 		"-v", "/tmp:/tmp",
-		"phantasm/busybox",
+		dockerName,
 		"bash", "-c", fmt.Sprintf(`
 			echo '%s' > /tmp/main.c &&
 			gcc /tmp/main.c -o /tmp/main &&
@@ -156,12 +159,12 @@ func prepareCCommand(ctx context.Context, containerName, code string) *exec.Cmd 
 		`, code))
 }
 
-func prepareCppCommand(ctx context.Context, containerName, code string) *exec.Cmd {
+func prepareCppCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
 		"--name", containerName,
 		"-i", "--cpus=0.5", "-m", "100m",
 		"-v", "/tmp:/tmp",
-		"phantasm/busybox",
+		dockerName,
 		"bash", "-c", fmt.Sprintf(`
 			echo '%s' > /tmp/main.cpp &&
 			g++ /tmp/main.cpp -o /tmp/main &&
@@ -169,9 +172,17 @@ func prepareCppCommand(ctx context.Context, containerName, code string) *exec.Cm
 		`, code))
 }
 
+func prepareJavaScriptCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
+	return exec.CommandContext(ctx, "docker", "run", "--rm",
+		"--name", containerName,
+		"-i", "--cpus=0.5", "-m", "100m",
+		dockerName,
+		"node", "-e", code)
+}
+
 // ExecuteCode runs the submitted code and returns the output or an error (non-interactive version)
 func ExecuteCode(req ExecRequest) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	output := make(chan string, 1)
@@ -180,7 +191,10 @@ func ExecuteCode(req ExecRequest) (string, error) {
 
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- ExecuteInteractiveCode(ctx, req, input, output)
+		start := time.Now()
+		err := ExecuteInteractiveCode(ctx, req, input, output)
+		fmt.Printf("ExecuteInteractiveCode took %v\n", time.Since(start))
+		errCh <- err
 	}()
 
 	var result strings.Builder
@@ -191,7 +205,7 @@ func ExecuteCode(req ExecRequest) (string, error) {
 		case err := <-errCh:
 			return result.String(), err
 		case <-ctx.Done():
-			return result.String(), ctx.Err()
+			return result.String(), fmt.Errorf("execution timed out after %v: %w", 10*time.Second, ctx.Err())
 		}
 	}
 }
