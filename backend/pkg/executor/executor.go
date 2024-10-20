@@ -63,10 +63,12 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 	}
 
 	// Start the Docker command
+	fmt.Printf("Running Docker command: %v\n", dockerCmd.String())
 	if err := dockerCmd.Start(); err != nil {
 		output <- "Error starting Docker command: " + err.Error()
 		return err
 	}
+	fmt.Println("Docker command started successfully")
 
 	// Use a WaitGroup to manage goroutines
 	var wg sync.WaitGroup
