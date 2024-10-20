@@ -160,3 +160,29 @@
   margin-right: 10px;
   color: var(--text-color);
 }
+
+.share-link-container {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+}
+
+.share-link-input {
+  width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.repl-button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.repl-button {
+  flex: 1;
+  margin: 0 5px;
+}

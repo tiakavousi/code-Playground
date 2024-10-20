@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -17,6 +20,16 @@ var upgrader = websocket.Upgrader{
 		return true
 	},
 }
+
+type SavedCode struct {
+	Language string `json:"language"`
+	Code     string `json:"code"`
+}
+
+var (
+	savedCodes = make(map[string]SavedCode)
+	codesMutex sync.RWMutex
+)
 
 func main() {
 	router := gin.New()
@@ -57,6 +70,12 @@ func main() {
 
 		c.JSON(http.StatusOK, gin.H{"output": output})
 	})
+
+	// New route for saving code
+	router.POST("/save", handleSaveCode)
+
+	// New route for retrieving saved code
+	router.GET("/share/:id", handleGetSavedCode)
 
 	// Basic route to test if server is working
 	router.GET("/", func(c *gin.Context) {
@@ -145,4 +164,48 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func handleSaveCode(c *gin.Context) {
+	var req SavedCode
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	id, err := generateUniqueID()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate unique ID"})
+		return
+	}
+
+	codesMutex.Lock()
+	savedCodes[id] = req
+	codesMutex.Unlock()
+
+	c.JSON(http.StatusOK, gin.H{"id": id})
+}
+
+func handleGetSavedCode(c *gin.Context) {
+	id := c.Param("id")
+
+	codesMutex.RLock()
+	savedCode, exists := savedCodes[id]
+	codesMutex.RUnlock()
+
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Code not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, savedCode)
+}
+
+func generateUniqueID() (string, error) {
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return base64.URLEncoding.EncodeToString(b), nil
 }
