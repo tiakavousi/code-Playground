@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Editor from "@monaco-editor/react";
-import REPLOutput from './REPLOutput';
+import REPLOutput from './output/REPLOutput';
+import REPLInput from './input/REPLInput';
+
 
 const Main = ({ wsUrl, initialCode = null }) => {
     const [code, setCode] = useState(''); // Holds the code entered by the user
@@ -228,20 +230,19 @@ const Main = ({ wsUrl, initialCode = null }) => {
                 </div>
             )}
 
-            {/* <div className="repl-output-container">
-                <h2 style={{ color: accentColor }}>Output:</h2>
-                <pre ref={outputRef} className="repl-output">
-                    {output || 'No output yet. Run your code to see results.'}
-                </pre>
-            </div> */}
-
             <REPLOutput
                 output={output}
                 outputRef={outputRef}
                 accentColor={accentColor}
             />
+              <REPLInput
+                input={input}
+                setInput={setInput}
+                isRunning={isRunning}
+                handleInputSubmit={handleInputSubmit}
+            />
 
-            <form onSubmit={handleInputSubmit} className="repl-input-form">
+            {/* <form onSubmit={handleInputSubmit} className="repl-input-form">
                 <input
                     type="text"
                     value={input}
@@ -256,7 +257,7 @@ const Main = ({ wsUrl, initialCode = null }) => {
                 >
                     Send Input
                 </button>
-            </form>
+            </form> */}
         </div>
     );
 };
