@@ -19,17 +19,17 @@ type ExecRequest struct {
 
 // ExecuteInteractiveCode runs the submitted code and supports interactive I/O
 func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan string, output chan<- string) error {
-	timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	// Generate a unique container name
 	containerName := fmt.Sprintf("code-exec-%d", time.Now().UnixNano())
 	dockerName := "tayebe/repl"
 
-	// Ensure Docker image exists
-	if err := ensureDockerImage(timeoutCtx, dockerName); err != nil {
-		return err
-	}
+	// // Ensure Docker image exists
+	// if err := ensureDockerImage(timeoutCtx, dockerName); err != nil {
+	// 	return err
+	// }
 
 	// Prepare Docker command based on language
 	var dockerCmd *exec.Cmd
@@ -137,18 +137,18 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 	}
 }
 
-func ensureDockerImage(ctx context.Context, imageName string) error {
-	// Check if image exists locally
-	inspectCmd := exec.CommandContext(ctx, "docker", "image", "inspect", imageName)
-	if err := inspectCmd.Run(); err != nil {
-		// Image doesn't exist, try to pull it
-		pullCmd := exec.CommandContext(ctx, "docker", "pull", imageName)
-		if err := pullCmd.Run(); err != nil {
-			return fmt.Errorf("failed to pull Docker image %s: %w", imageName, err)
-		}
-	}
-	return nil
-}
+// func ensureDockerImage(ctx context.Context, imageName string) error {
+// 	// Check if image exists locally
+// 	inspectCmd := exec.CommandContext(ctx, "docker", "image", "inspect", imageName)
+// 	if err := inspectCmd.Run(); err != nil {
+// 		// Image doesn't exist, try to pull it
+// 		pullCmd := exec.CommandContext(ctx, "docker", "pull", imageName)
+// 		if err := pullCmd.Run(); err != nil {
+// 			return fmt.Errorf("failed to pull Docker image %s: %w", imageName, err)
+// 		}
+// 	}
+// 	return nil
+// }
 
 func prepareJavaCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
 	return exec.CommandContext(ctx, "docker", "run", "--rm",
@@ -196,7 +196,7 @@ func prepareJavaScriptCommand(ctx context.Context, containerName, dockerName, co
 
 // ExecuteCode runs the submitted code and returns the output or an error (non-interactive version)
 func ExecuteCode(req ExecRequest) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	output := make(chan string, 5)
@@ -219,7 +219,7 @@ func ExecuteCode(req ExecRequest) (string, error) {
 		case err := <-errCh:
 			return result.String(), err
 		case <-ctx.Done():
-			return result.String(), fmt.Errorf("execution timed out after %v: %w", 15*time.Second, ctx.Err())
+			return result.String(), fmt.Errorf("execution timed out after %v: %w", 60*time.Second, ctx.Err())
 		}
 	}
 }
