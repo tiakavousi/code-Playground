@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, useParams } from 'react-router-dom';
-import REPLPlayground from './REPLPlayground';
-import './App.css';
-import Editor from '@monaco-editor/react';
-
+import Main from './components/Main';
 
 function SharedCodeLoader({ wsUrl }) {
   const [sharedCode, setSharedCode] = useState(null);
@@ -41,7 +38,7 @@ function SharedCodeLoader({ wsUrl }) {
     return <div>Error: {error}</div>;
   }
 
-  return <REPLPlayground wsUrl={wsUrl} initialCode={sharedCode} />;
+  return <Main wsUrl={wsUrl} initialCode={sharedCode} />;
 }
 
 function App({ wsUrl }) {
@@ -49,7 +46,7 @@ function App({ wsUrl }) {
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<REPLPlayground wsUrl={wsUrl} />} />
+          <Route path="/" element={<Main wsUrl={wsUrl} />} />
           <Route path="/share/:id" element={<SharedCodeLoader wsUrl={wsUrl} />} />
         </Routes>
       </div>
