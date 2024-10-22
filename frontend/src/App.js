@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, useParams } from 'react-router-dom';
 import REPLPlayground from './REPLPlayground';
 import './App.css';
+import Editor from '@monaco-editor/react';
+
 
 function SharedCodeLoader({ wsUrl }) {
   const [sharedCode, setSharedCode] = useState(null);

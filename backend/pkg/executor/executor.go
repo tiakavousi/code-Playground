@@ -19,7 +19,7 @@ type ExecRequest struct {
 
 // ExecuteInteractiveCode runs the submitted code and supports interactive I/O
 func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan string, output chan<- string) error {
-	timeoutCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	// Generate a unique container name
@@ -178,7 +178,7 @@ func prepareJavaScriptCommand(ctx context.Context, containerName, dockerName, co
 
 // ExecuteCode runs the submitted code and returns the output or an error (non-interactive version)
 func ExecuteCode(req ExecRequest) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	output := make(chan string, 5)
@@ -201,7 +201,7 @@ func ExecuteCode(req ExecRequest) (string, error) {
 		case err := <-errCh:
 			return result.String(), err
 		case <-ctx.Done():
-			return result.String(), fmt.Errorf("execution timed out after %v: %w", 10*time.Second, ctx.Err())
+			return result.String(), fmt.Errorf("execution timed out after %v: %w", 15*time.Second, ctx.Err())
 		}
 	}
 }
