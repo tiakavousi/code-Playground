@@ -26,6 +26,11 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 	containerName := fmt.Sprintf("code-exec-%d", time.Now().UnixNano())
 	dockerName := "tayebe/repl"
 
+	// Ensure Docker image exists
+	if err := ensureDockerImage(timeoutCtx, dockerName); err != nil {
+		return err
+	}
+
 	// Prepare Docker command based on language
 	var dockerCmd *exec.Cmd
 	switch strings.ToLower(req.Language) {
@@ -130,6 +135,19 @@ func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan s
 		wg.Wait()
 		return err
 	}
+}
+
+func ensureDockerImage(ctx context.Context, imageName string) error {
+	// Check if image exists locally
+	inspectCmd := exec.CommandContext(ctx, "docker", "image", "inspect", imageName)
+	if err := inspectCmd.Run(); err != nil {
+		// Image doesn't exist, try to pull it
+		pullCmd := exec.CommandContext(ctx, "docker", "pull", imageName)
+		if err := pullCmd.Run(); err != nil {
+			return fmt.Errorf("failed to pull Docker image %s: %w", imageName, err)
+		}
+	}
+	return nil
 }
 
 func prepareJavaCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
