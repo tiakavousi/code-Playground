@@ -6,127 +6,158 @@ import (
 	"encoding/base64"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/tiakavousi/codeplayground/pkg/container"
 	"github.com/tiakavousi/codeplayground/pkg/executor"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
+const (
+	defaultExecutionTimeout = 10 * time.Second
+	defaultContainerImage   = "tayebe/repl"
+)
+
+var (
+	upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			// TODO: Implement proper origin checking for production
+			return true
+		},
+	}
+
+	// Global variables for saved code functionality
+	savedCodes = make(map[string]SavedCode)
+	codesMutex sync.RWMutex
+
+	// Global executor service
+	execService *executor.Service
+)
 
 type SavedCode struct {
 	Language string `json:"language"`
 	Code     string `json:"code"`
 }
 
-var (
-	savedCodes = make(map[string]SavedCode)
-	codesMutex sync.RWMutex
-)
-
 func main() {
-	router := gin.New()
+	// Setup logging
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	// Attach Logger and Recovery middleware
+	// Initialize the executor service
+	dockerImage := os.Getenv("DOCKER_IMAGE")
+	if dockerImage == "" {
+		dockerImage = defaultContainerImage
+	}
+
+	dockerRunner := container.NewDockerRunner(dockerImage)
+	execService = executor.NewService(dockerRunner)
+
+	// Initialize Gin router
+	router := setupRouter()
+
+	// Start server
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("Server starting on port %s...", port)
+	if err := router.Run(":" + port); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
+}
+
+func setupRouter() *gin.Engine {
+	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	// Enable CORS with custom configuration
+	// CORS configuration
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"*"}
 	config.AllowMethods = []string{"GET", "POST", "OPTIONS"}
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization", "Upgrade", "Connection"}
+	config.AllowHeaders = []string{
+		"Origin",
+		"Content-Type",
+		"Accept",
+		"Authorization",
+		"Upgrade",
+		"Connection",
+	}
 	config.ExposeHeaders = []string{"Content-Length"}
 	config.AllowCredentials = true
 	config.MaxAge = 12 * time.Hour
 	config.AllowWebSockets = true
 	router.Use(cors.New(config))
 
-	// WebSocket route for interactive code execution
-	router.GET("/execute", func(c *gin.Context) {
-		handleWebSocket(c.Writer, c.Request)
-	})
-
-	// Keeping the old POST route for non-interactive execution
-	router.POST("/execute", func(c *gin.Context) {
-		var req executor.ExecRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		output, err := executor.ExecuteCode(req)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"output": output})
-	})
-
-	// New route for saving code
+	// Routes
+	router.GET("/execute", handleWebSocket)
+	router.POST("/execute", handleExecute)
 	router.POST("/save", handleSaveCode)
-
-	// New route for retrieving saved code
 	router.GET("/share/:id", handleGetSavedCode)
+	router.GET("/", handleHealthCheck)
 
-	// Basic route to test if server is working
-	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Welcome to the backend!")
-	})
-
-	// Run the web server on port 8080
-	router.Run(":8080")
+	return router
 }
 
-func handleWebSocket(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
+func handleHealthCheck(c *gin.Context) {
+	c.String(http.StatusOK, "Welcome to the backend!")
+}
+
+func handleWebSocket(c *gin.Context) {
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println("WebSocket upgrade error:", err)
 		return
 	}
 	defer conn.Close()
 
+	// Read initial request
 	var req executor.ExecRequest
-	err = conn.ReadJSON(&req)
-	if err != nil {
+	if err := conn.ReadJSON(&req); err != nil {
 		log.Println("JSON read error:", err)
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+	// Create execution context with timeout
+	ctx, cancel := context.WithTimeout(c.Request.Context(), defaultExecutionTimeout)
 	defer cancel()
 
-	input := make(chan string)
-	output := make(chan string)
+	// Create channels for communication
+	input := make(chan string, 5)
+	output := make(chan string, 5)
 	done := make(chan struct{})
 
-	// Goroutine for executing code
-	go func() {
-		defer close(done)
-		err := executor.ExecuteInteractiveCode(ctx, req, input, output)
-		if err != nil {
-			select {
-			case output <- "Execution error: " + err.Error():
-			case <-ctx.Done():
-			}
-		}
-	}()
+	// Execute code
+	go executeCode(ctx, req, input, output, done)
 
-	// Goroutine for reading from WebSocket
+	// Handle WebSocket communication
+	handleWebSocketCommunication(ctx, conn, input, output, done)
+}
+
+func executeCode(ctx context.Context, req executor.ExecRequest, input chan string, output chan string, done chan struct{}) {
+	defer close(done)
+	err := execService.ExecuteInteractive(ctx, req, input, output)
+	if err != nil {
+		select {
+		case output <- "Execution error: " + err.Error():
+		case <-ctx.Done():
+		}
+	}
+}
+
+func handleWebSocketCommunication(ctx context.Context, conn *websocket.Conn, input chan string, output chan string, done chan struct{}) {
+	// Handle input from WebSocket
 	go func() {
-		defer cancel() // Ensure context is cancelled when this goroutine exits
+		defer close(input)
 		for {
 			_, message, err := conn.ReadMessage()
 			if err != nil {
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 					log.Printf("WebSocket read error: %v", err)
 				}
 				return
@@ -139,31 +170,42 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	// Main loop for handling output
+	// Handle output to WebSocket
 	for {
 		select {
 		case line := <-output:
-			err := conn.WriteMessage(websocket.TextMessage, []byte(line))
-			if err != nil {
+			if err := conn.WriteMessage(websocket.TextMessage, []byte(line)); err != nil {
 				log.Printf("WebSocket write error: %v", err)
 				return
 			}
 		case <-done:
-			// Gracefully close the WebSocket connection
-			err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				log.Printf("Error during closing WebSocket: %v", err)
-			}
+			// Clean shutdown
+			conn.WriteMessage(websocket.CloseMessage,
+				websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			return
 		case <-ctx.Done():
-			// Gracefully close the WebSocket connection on timeout
-			err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Execution timeout"))
-			if err != nil {
-				log.Printf("Error during closing WebSocket on timeout: %v", err)
-			}
+			// Timeout
+			conn.WriteMessage(websocket.CloseMessage,
+				websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Execution timeout"))
 			return
 		}
 	}
+}
+
+func handleExecute(c *gin.Context) {
+	var req executor.ExecRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	output, err := execService.Execute(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"output": output})
 }
 
 func handleSaveCode(c *gin.Context) {

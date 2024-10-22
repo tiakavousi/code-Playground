@@ -1,216 +1,86 @@
 package executor
 
 import (
-	"bufio"
 	"context"
 	"fmt"
-	"io"
-	"os/exec"
+	"log"
 	"strings"
-	"sync"
 	"time"
 )
 
 // ExecRequest defines the input for code execution
 type ExecRequest struct {
-	Language string `json:"language"`
-	Code     string `json:"code"`
+	Language string `json:"language" binding:"required"`
+	Code     string `json:"code" binding:"required"`
 }
 
-// ExecuteInteractiveCode runs the submitted code and supports interactive I/O
-func ExecuteInteractiveCode(ctx context.Context, req ExecRequest, input <-chan string, output chan<- string) error {
-	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+// CodeRunner interface defines methods that must be implemented by any code execution backend
+type CodeRunner interface {
+	RunInteractive(ctx context.Context, req ExecRequest, input <-chan string, output chan<- string) error
+}
+
+// Service represents the code execution service
+type Service struct {
+	runner CodeRunner
+}
+
+// NewService creates a new executor service with the specified runner
+func NewService(runner CodeRunner) *Service {
+	return &Service{
+		runner: runner,
+	}
+}
+
+// ExecuteInteractive runs code with interactive I/O
+func (s *Service) ExecuteInteractive(ctx context.Context, req ExecRequest, input <-chan string, output chan<- string) error {
+	// Validate request
+	if err := validateRequest(req); err != nil {
+		return fmt.Errorf("invalid request: %w", err)
+	}
+
+	// Create execution context
+	execCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	// Generate a unique container name
-	containerName := fmt.Sprintf("code-exec-%d", time.Now().UnixNano())
-	dockerName := "tayebe/repl"
-
-	// // Ensure Docker image exists
-	// if err := ensureDockerImage(timeoutCtx, dockerName); err != nil {
-	// 	return err
-	// }
-
-	// Prepare Docker command based on language
-	var dockerCmd *exec.Cmd
-	switch strings.ToLower(req.Language) {
-	case "java":
-		dockerCmd = prepareJavaCommand(timeoutCtx, containerName, dockerName, req.Code)
-	case "c":
-		dockerCmd = prepareCCommand(timeoutCtx, containerName, dockerName, req.Code)
-	case "c++", "cpp":
-		dockerCmd = prepareCppCommand(timeoutCtx, containerName, dockerName, req.Code)
-	case "javascript", "js":
-		dockerCmd = prepareJavaScriptCommand(timeoutCtx, containerName, dockerName, req.Code)
-	default:
-		// For interpreted languages, use the existing approach
-		dockerCmd = exec.CommandContext(timeoutCtx, "docker", "run", "--rm",
-			"--name", containerName,
-			"-i", "--cpus=0.5",
-			"-m", "100m",
-			dockerName,
-			strings.ToLower(req.Language), "-c", req.Code)
-	}
-
-	stdin, err := dockerCmd.StdinPipe()
+	// Run the code
+	err := s.runner.RunInteractive(execCtx, req, input, output)
 	if err != nil {
-		return fmt.Errorf("error creating stdin pipe: %w", err)
-	}
-
-	stdout, err := dockerCmd.StdoutPipe()
-	if err != nil {
-		return fmt.Errorf("error creating stdout pipe: %w", err)
-	}
-
-	stderr, err := dockerCmd.StderrPipe()
-	if err != nil {
-		return fmt.Errorf("error creating stderr pipe: %w", err)
-	}
-
-	// Start the Docker command
-	if err := dockerCmd.Start(); err != nil {
-		return err
-	}
-
-	// Use a WaitGroup to manage goroutines
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	// Goroutine for handling stdout and stderr
-	go func() {
-		defer wg.Done()
-		scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
-		for scanner.Scan() {
-			select {
-			case output <- scanner.Text():
-			case <-timeoutCtx.Done():
-				return
-			}
+		log.Printf("Execution error for language %s: %v", req.Language, err)
+		if execCtx.Err() == context.DeadlineExceeded {
+			return fmt.Errorf("execution timed out after 30 seconds")
 		}
-	}()
-
-	// Goroutine for handling stdin
-	go func() {
-		defer wg.Done()
-		for {
-			select {
-			case inputLine, ok := <-input:
-				if !ok {
-					return
-				}
-				_, err := fmt.Fprintln(stdin, inputLine)
-				if err != nil {
-					output <- "Error writing to stdin: " + err.Error()
-					return
-				}
-			case <-timeoutCtx.Done():
-				return
-			}
-		}
-	}()
-
-	// Wait for the command to finish or the context to be done
-	done := make(chan error, 1)
-	go func() {
-		done <- dockerCmd.Wait()
-	}()
-
-	// Wait for the command to finish or the context to be done
-	select {
-	case <-timeoutCtx.Done():
-		// Force kill the container
-		killCmd := exec.Command("docker", "kill", containerName)
-		if err := killCmd.Run(); err != nil {
-			output <- fmt.Sprintf("Failed to kill container: %v", err)
-		} else {
-			output <- "Container killed successfully"
-		}
-
-		// Wait for goroutines to finish
-		wg.Wait()
-
-		return timeoutCtx.Err()
-	case err := <-done:
-		// Wait for goroutines to finish
-		wg.Wait()
-		return err
+		return fmt.Errorf("execution error: %w", err)
 	}
+
+	return nil
 }
 
-// func ensureDockerImage(ctx context.Context, imageName string) error {
-// 	// Check if image exists locally
-// 	inspectCmd := exec.CommandContext(ctx, "docker", "image", "inspect", imageName)
-// 	if err := inspectCmd.Run(); err != nil {
-// 		// Image doesn't exist, try to pull it
-// 		pullCmd := exec.CommandContext(ctx, "docker", "pull", imageName)
-// 		if err := pullCmd.Run(); err != nil {
-// 			return fmt.Errorf("failed to pull Docker image %s: %w", imageName, err)
-// 		}
-// 	}
-// 	return nil
-// }
+// Execute runs code and returns the output (non-interactive)
+func (s *Service) Execute(req ExecRequest) (string, error) {
+	// Validate request
+	if err := validateRequest(req); err != nil {
+		return "", fmt.Errorf("invalid request: %w", err)
+	}
 
-func prepareJavaCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
-	return exec.CommandContext(ctx, "docker", "run", "--rm",
-		"--name", containerName,
-		"-i", "--cpus=0.5", "-m", "100m",
-		dockerName,
-		"bash", "-c", fmt.Sprintf(`
-			echo '%s' > /tmp/Main.java &&
-			javac /tmp/Main.java &&
-			java -cp /tmp Main
-		`, code))
-}
-
-func prepareCCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
-	return exec.CommandContext(ctx, "docker", "run", "--rm",
-		"--name", containerName,
-		"-i", "--cpus=0.5", "-m", "100m",
-		dockerName,
-		"bash", "-c", fmt.Sprintf(`
-			echo '%s' > /tmp/main.c &&
-			gcc /tmp/main.c -o /tmp/main &&
-			/tmp/main
-		`, code))
-}
-
-func prepareCppCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
-	return exec.CommandContext(ctx, "docker", "run", "--rm",
-		"--name", containerName,
-		"-i", "--cpus=0.5", "-m", "100m",
-		dockerName,
-		"bash", "-c", fmt.Sprintf(`
-			echo '%s' > /tmp/main.cpp &&
-			g++ /tmp/main.cpp -o /tmp/main &&
-			/tmp/main
-		`, code))
-}
-
-func prepareJavaScriptCommand(ctx context.Context, containerName, dockerName, code string) *exec.Cmd {
-	return exec.CommandContext(ctx, "docker", "run", "--rm",
-		"--name", containerName,
-		"-i", "--cpus=1", "-m", "300m",
-		dockerName,
-		"node", "-e", code)
-}
-
-// ExecuteCode runs the submitted code and returns the output or an error (non-interactive version)
-func ExecuteCode(req ExecRequest) (string, error) {
+	// Create execution context
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
+	// Create channels for communication
 	output := make(chan string, 5)
 	input := make(chan string, 5)
 	defer close(input)
 
+	// Execute the code
 	errCh := make(chan error, 1)
 	go func() {
 		start := time.Now()
-		err := ExecuteInteractiveCode(ctx, req, input, output)
-		fmt.Printf("ExecuteInteractiveCode took %v\n", time.Since(start))
+		err := s.ExecuteInteractive(ctx, req, input, output)
+		log.Printf("Execution took %v", time.Since(start))
 		errCh <- err
 	}()
 
+	// Collect output
 	var result strings.Builder
 	for {
 		select {
@@ -222,4 +92,15 @@ func ExecuteCode(req ExecRequest) (string, error) {
 			return result.String(), fmt.Errorf("execution timed out after %v: %w", 60*time.Second, ctx.Err())
 		}
 	}
+}
+
+// validateRequest checks if the request is valid
+func validateRequest(req ExecRequest) error {
+	if strings.TrimSpace(req.Language) == "" {
+		return fmt.Errorf("language cannot be empty")
+	}
+	if strings.TrimSpace(req.Code) == "" {
+		return fmt.Errorf("code cannot be empty")
+	}
+	return nil
 }
