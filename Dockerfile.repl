@@ -1,13 +1,32 @@
-FROM ubuntu:20.04
+# Use buildx to create multi-platform image
+FROM --platform=$BUILDPLATFORM ubuntu:20.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update -y -q && apt-get install -y -q \
     build-essential \
     python3 \
     openjdk-17-jdk \
-    nodejs
+    nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
-ENV PATH="/usr/bin:$PATH" 
+# Create a non-root user
+RUN groupadd -r coderunner && useradd -r -g coderunner -s /bin/bash coderunner
 
-CMD [ "bash" ]
+# Create and set up working directory
+RUN mkdir -p /sandbox/workspace /sandbox/tmp \
+    && chown -R coderunner:coderunner /sandbox \
+    && chmod 755 /sandbox
+
+# Switch to non-root user
+USER coderunner
+
+# Set working directory
+WORKDIR /sandbox/workspace
+
+# Set environment variables
+ENV PATH="/usr/bin:$PATH"
+ENV TMPDIR="/sandbox/tmp"
+ENV HOME="/sandbox"
+
+CMD ["bash"]
