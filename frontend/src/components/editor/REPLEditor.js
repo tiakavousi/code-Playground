@@ -6,7 +6,6 @@ const REPLEditor = ({
     setLanguage,
     code,
     handleEditorChange,
-    handleEditorWillMount,
     handleEditorDidMount,
     handleEditorValidation,
     isDarkMode,
@@ -36,7 +35,6 @@ const REPLEditor = ({
                     value={code}
                     theme={isDarkMode ? "vs-dark" : "light"}
                     onChange={handleEditorChange}
-                    beforeMount={handleEditorWillMount}
                     onMount={handleEditorDidMount}
                     onValidate={handleEditorValidation}
                     options={{

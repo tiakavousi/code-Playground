@@ -44,13 +44,8 @@ const Main = ({ wsUrl, initialCode = null }) => {
     const handleEditorDidMount = (editor, monaco) => {
         editorRef.current = editor;
         setIsEditorReady(true);
-        console.log("Editor mounted successfully");
     }
 
-    // Logs the editor mounting process for debugging
-    const handleEditorWillMount = (monaco) => {
-        console.log("Editor will mount");
-    }
 
     // Logs any validation markers (warnings/errors) from the Monaco editor
     const handleEditorValidation = (markers) => {
@@ -147,23 +142,6 @@ const Main = ({ wsUrl, initialCode = null }) => {
 
     return (
         <div className={`repl-container ${isDarkMode ? 'dark-mode' : ''}`}>
-            {/* <div className="repl-header">
-                <h1 className="repl-title">Interactive REPL Playground</h1>
-                <div className="repl-controls">
-                    <button onClick={toggleTheme} className="repl-theme-toggle">
-                        {isDarkMode ? '☀️ Light' : '🌙 Dark'}
-                    </button>
-                    <div className="repl-color-picker">
-                        <label htmlFor="colorPicker" className="repl-color-picker-label">Accent:</label>
-                        <input
-                            type="color"
-                            id="colorPicker"
-                            value={accentColor}
-                            onChange={handleColorChange}
-                        />
-                    </div>
-                </div>
-            </div> */}
             <Header
                 isDarkMode={isDarkMode}
                 toggleTheme={toggleTheme}
@@ -171,75 +149,11 @@ const Main = ({ wsUrl, initialCode = null }) => {
                 handleColorChange={handleColorChange}
             />
 
-            {error && (
-                <div className="repl-error">
-                    {error}
-                </div>
-            )}
-
-            {/* <div className="repl-editor">
-                <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="repl-select"
-                >
-                    <option value="c">C</option>
-                    <option value="cpp">C++</option>
-                    <option value="python3">Python</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="java">Java</option>
-                    <option value="bash">Bash</option>
-                </select>
-
-                <Editor
-                    height="400px"
-                    language={language}
-                    value={code}
-                    theme={isDarkMode ? "vs-dark" : "light"}
-                    onChange={handleEditorChange}
-                    beforeMount={handleEditorWillMount}
-                    onMount={handleEditorDidMount}
-                    onValidate={handleEditorValidation}
-                    options={{
-                        minimap: { enabled: false }
-                    }}
-                    loading={<div>Loading editor...</div>}
-                />
-
-                <div className="repl-button-group">
-                    <button
-                        onClick={handleExecute}
-                        disabled={isRunning}
-                        className="repl-button"
-                    >
-                        {isRunning ? 'Running...' : 'Run'}
-                    </button>
-                    <button
-                        onClick={handleSaveAndShare}
-                        className="repl-button"
-                    >
-                        Save & Share
-                    </button>
-                </div>
-            </div>
-
-            {shareLink && (
-                <div className="share-link-container">
-                    <p>Share your code with this link:</p>
-                    <input
-                        type="text"
-                        value={shareLink}
-                        readOnly
-                        className="share-link-input"
-                    />
-                </div>
-            )} */}
             <REPLEditor 
                 language={language}
                 setLanguage={setLanguage}
                 code={code}
                 handleEditorChange={handleEditorChange}
-                handleEditorWillMount={handleEditorWillMount}
                 handleEditorDidMount={handleEditorDidMount}
                 handleEditorValidation={handleEditorValidation}
                 isDarkMode={isDarkMode}
