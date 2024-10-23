@@ -1,8 +1,7 @@
 # Code Snippet Examples
+---
 
-1. Java:
-
-## Simple
+## Simple Java Program:
 ```
 public class Main {
     public static void main(String[] args) {
@@ -12,7 +11,7 @@ public class Main {
 
 ```
 
-## Integer Input needed
+## Integer Input needed Java Program:
 ```
 import java.util.Scanner;
 
@@ -26,10 +25,9 @@ public class Main {
     }
 }
 ```
+---
 
-2. JavaScript:
-
-## Simple
+## Simple JavaScript Program:
 ```
 function sayHello() {
     console.log("Hello, World!");
@@ -40,7 +38,7 @@ sayHello();
 
 ```
 
-## Integer Input needed
+## Integer Input needed JavaScript Program:
 ```
 function addFive(number) {
     return number + 5;
@@ -53,10 +51,9 @@ const number = parseInt(prompt("Enter a number: "), 10);
 console.log("Result: " + addFive(number));
 
 ```
+---
 
-3. Python:
-
-## Simple
+## Simple Python Program:
 ```
 def say_hello():
     print("Hello, World!")
@@ -66,7 +63,7 @@ say_hello()
 
 ```
 
-## Integer Input needed
+## Integer Input needed Python Program:
 ```
 def add_five(number):
     return number + 5
@@ -78,10 +75,9 @@ number = int(input("Enter a number: "))
 print("Result:", add_five(number))
 
 ```
+---
 
-4. C:
-
-## Simple
+## Simple C Program:
 ```
 #include <stdio.h>
 
@@ -92,7 +88,7 @@ int main() {
 
 ```
 
-## Integer Input needed
+## Integer Input needed C Program:
 ```
 #include <stdio.h>
 
@@ -106,10 +102,9 @@ int main() {
 }
 
 ```
+---
 
-5. C++:
-
-## Simple
+## Simple C++ Program:
 ```
 #include <iostream>
 
@@ -120,7 +115,7 @@ int main() {
 
 ```
 
-## Integer Input needed
+## Integer Input needed C++ Program:
 ```
 #include <iostream>
 
@@ -133,17 +128,18 @@ int main() {
     return 0;
 }
 ```
+---
 
 6. Bash:
 
-## Simple
+## Simple Bash Program:
 ```
 #!/bin/bash
 echo "Hello, World!"
 
 ```
 
-## Integer Input needed
+## Integer Input needed Bash Program:
 ```
 #!/bin/bash
 read -p "Enter a number: " number
@@ -151,7 +147,7 @@ result=$((number + 5))
 echo "Result: $result"
 
 ```
-======================
+---
 
 ## C Program with Infinite Loop:
 ```
