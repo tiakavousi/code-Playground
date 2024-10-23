@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Editor from "@monaco-editor/react";
 import REPLOutput from './output/REPLOutput';
 import REPLInput from './input/REPLInput';
 import REPLEditor from './editor/REPLEditor';
+import Header from './header/Header';
 
 
 const Main = ({ wsUrl, initialCode = null }) => {
@@ -147,7 +147,7 @@ const Main = ({ wsUrl, initialCode = null }) => {
 
     return (
         <div className={`repl-container ${isDarkMode ? 'dark-mode' : ''}`}>
-            <div className="repl-header">
+            {/* <div className="repl-header">
                 <h1 className="repl-title">Interactive REPL Playground</h1>
                 <div className="repl-controls">
                     <button onClick={toggleTheme} className="repl-theme-toggle">
@@ -163,7 +163,13 @@ const Main = ({ wsUrl, initialCode = null }) => {
                         />
                     </div>
                 </div>
-            </div>
+            </div> */}
+            <Header
+                isDarkMode={isDarkMode}
+                toggleTheme={toggleTheme}
+                accentColor={accentColor}
+                handleColorChange={handleColorChange}
+            />
 
             {error && (
                 <div className="repl-error">
@@ -232,7 +238,6 @@ const Main = ({ wsUrl, initialCode = null }) => {
                 language={language}
                 setLanguage={setLanguage}
                 code={code}
-                setCode={setCode}
                 handleEditorChange={handleEditorChange}
                 handleEditorWillMount={handleEditorWillMount}
                 handleEditorDidMount={handleEditorDidMount}

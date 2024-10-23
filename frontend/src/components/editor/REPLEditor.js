@@ -5,7 +5,6 @@ const REPLEditor = ({
     language,
     setLanguage,
     code,
-    setCode,
     handleEditorChange,
     handleEditorWillMount,
     handleEditorDidMount,
