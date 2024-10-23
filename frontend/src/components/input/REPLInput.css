@@ -1,4 +1,4 @@
-.repl-input-form {
+/* .repl-input-form {
     display: flex;
     gap: 1rem;
     margin-top: 1rem;
@@ -42,7 +42,7 @@
     opacity: 0.9;
 }
 
-/* Dark mode styles */
+
 .dark-mode .repl-input-form {
     background-color: #1e1e1e;
     border-color: #2d2d2d;
@@ -60,4 +60,31 @@
 
 .dark-mode .repl-submit-button:disabled {
     background-color: #444;
+} */
+
+/* Input area styles */
+.repl-input-container {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: white;
+    height: fit-content;
+}
+
+.input-form {
+    display: flex;
+}
+
+.input-field {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+/* Dark mode styles */
+.dark-mode .repl-input-container,
+.dark-mode .input-field {
+    background-color: #2d2d2d;
+    border-color: #404040;
+    color: #ffffff;
 }

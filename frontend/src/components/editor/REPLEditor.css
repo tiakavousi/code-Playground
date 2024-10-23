@@ -1,0 +1,104 @@
+/* Editor container */
+.repl-editor {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+/* Editor controls */
+.editor-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+/* Monaco Editor */
+.monaco-editor {
+    width: 100% !important;
+    height: 50vh !important;
+    overflow: auto;
+}
+
+/* Run button */
+.repl-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--accent-color, #007bff);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.repl-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.repl-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+/* Bottom controls */
+.bottom-controls {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Share link styles */
+.share-link-container {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.share-link-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+/* Monaco Editor scrollbar */
+.monaco-editor::-webkit-scrollbar {
+    width: 8px;
+}
+
+.monaco-editor::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.monaco-editor::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+/* Dark mode styles */
+.dark-mode .repl-editor,
+.dark-mode .share-link-container,
+.dark-mode .share-link-input,
+.dark-mode .bottom-controls {
+    background-color: #2d2d2d;
+    border-color: #404040;
+    color: #ffffffc2;
+}
+
+.dark-mode .monaco-editor::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+.dark-mode .monaco-editor::-webkit-scrollbar-thumb {
+    background: #555;
+}

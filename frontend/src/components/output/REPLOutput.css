@@ -1,0 +1,39 @@
+/* Output area styles */
+.repl-output {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    height: 50vh !important;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+/* Scrollbar styling */
+.repl-output::-webkit-scrollbar {
+    width: 8px;
+}
+
+.repl-output::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.repl-output::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+/* Dark mode styles */
+.dark-mode .repl-output {
+    background-color: #2d2d2d;
+    border-color: #404040;
+    color: #ffffff;
+}
+
+.dark-mode .repl-output::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+.dark-mode .repl-output::-webkit-scrollbar-thumb {
+    background: #555;
+}

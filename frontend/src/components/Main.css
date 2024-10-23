@@ -6,14 +6,6 @@
     width: 100%;
 }
 
-/* Header styles */
-.header {
-    width: 100%;
-    padding: 1rem;
-    background-color: var(--accent-color, #007bff);
-    color: white;
-}
-
 /* Main content area - Two Column Layout */
 .repl-content {
     display: flex;
@@ -37,221 +29,24 @@
     width: 50%;
 }
 
-/* Editor specific styles */
-.repl-editor {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-}
-
-/* Editor controls with language select and run button */
-.editor-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    width: 100%;
-}
-
-.repl-select {
-    width: 150px;
-    padding: 0.5rem;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-}
-
-.repl-button {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
-    background-color: var(--accent-color, #007bff);
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.repl-button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
-.repl-button:hover:not(:disabled) {
-    background-color: #0056b3;
-}
-
-/* Monaco Editor container - fixed height */
-.monaco-editor {
-    width: 100% !important;
-    height: 50vh !important;
-    overflow: auto;
-}
-
-/* Bottom controls for Save & Share */
-.bottom-controls {
-    display: flex;
-    justify-content: flex-start;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #dee2e6;
-}
-
-/* Input area in right column */
-.repl-input-container {
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    background-color: white;
-    height: fit-content;
-}
-
-.input-form {
-    display: flex;
-}
-
-.input-field {
-    flex: 1;
-    padding: 0.5rem;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-}
-
-/* Output area in right column - fixed height with scroll */
-.repl-output {
-    padding: 1rem;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    height: 50vh !important;
-    max-height: 50vh;
-    overflow-y: auto;
-}
-
-/* Share link styles */
-.share-link-container {
-    margin-top: 1rem;
-    padding: 1rem;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-}
-
-.share-link-input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    margin-top: 0.5rem;
-}
-
-/* Scrollbar styling */
-.repl-output::-webkit-scrollbar,
-.monaco-editor::-webkit-scrollbar {
-    width: 8px;
-}
-
-.repl-output::-webkit-scrollbar-track,
-.monaco-editor::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.repl-output::-webkit-scrollbar-thumb,
-.monaco-editor::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
-
-.repl-title {
+/* Dark mode base styles */
+.repl-container.dark-mode {
+    background-color: #1e1e1e;
     color: var(--accent-color);
 }
 
-
-/* Style for selected option in the dropdown */
-.repl-select option:checked {
-    background-color: var(--accent-color);
-    color: white;
-}
-
-/* Style for the select when opened (the highlighted option) */
-.repl-select option:hover,
-.repl-select option:focus {
-    background-color: var(--accent-color);
-    color: white;
-}
-
-/* Optional: Style the select itself when focused */
-.repl-select:focus {
-    border-color: var(--accent-color);
-    outline-color: var(--accent-color);
-}
-
-
-/* DARK MODE */
-
-/* Base container dark mode */
-.repl-container.dark-mode {
-    background-color: #1e1e1e;
-    color: --accent-color;
-}
-
-/* Left column dark mode */
-.dark-mode .repl-editor,
-.dark-mode .repl-select,
-.dark-mode .share-link-container,
-.dark-mode .share-link-input,
-.dark-mode .bottom-controls {
-    background-color: #2d2d2d;
-    border-color: #404040;
-    color: #ffffffc2;
-}
-
 .dark-mode .repl-left-column {
-    border-right-color: #404040;  /* Changed from yellow to match theme */
+    border-right-color: #404040;
 }
 
-/* Right column dark mode */
 .repl-container.dark-mode .repl-right-column {
     background-color: #1e1e1e;
     border-left: 1px solid #404040;
 }
 
-/* Input area dark mode */
-.dark-mode .repl-input-container,
-.dark-mode .input-field {
-    background-color: #2d2d2d;
-    border-color: #404040;
-    color: #ffffff;
-}
-
-/* Output area dark mode */
-.dark-mode .repl-output {
-    background-color: #2d2d2d;
-    border-color: #404040;
-    color: #ffffff;
-}
-
-/* Scrollbar customization for dark mode */
-.dark-mode .repl-output::-webkit-scrollbar,
-.dark-mode .monaco-editor::-webkit-scrollbar {
-    width: 10px;
-}
-
-.dark-mode .repl-output::-webkit-scrollbar-track,
-.dark-mode .monaco-editor::-webkit-scrollbar-track {
-    background: #1e1e1e;
-}
-
-.dark-mode .repl-output::-webkit-scrollbar-thumb,
-.dark-mode .monaco-editor::-webkit-scrollbar-thumb {
-    background: #555;
-    border-radius: 5px;
-}
-
-/* Input and buttons dark mode */
+/* General dark mode button styles */
 .repl-container.dark-mode button {
-    background-color: var(--accent-color);
+    /* background-color: var(--accent-color); */
     color: #ffffff;
 }
 

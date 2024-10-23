@@ -1,0 +1,76 @@
+/* Header container */
+.header {
+    width: 100%;
+    padding: 1rem;
+    background-color: transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.repl-title {
+    color: var(--accent-color);
+    margin: 0;
+}
+
+/* Switch styles */
+.theme-toggle-switch {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.switch-track {
+    width: 56px;  /* Increased width */
+    height: 28px;  /* Increased height */
+    background-color: #000;  /* Black for light mode */
+    border-radius: 14px;  /* Half of height */
+    position: relative;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+}
+
+.switch-track.dark {
+    background-color: #fff;  /* White for dark mode */
+}
+
+.switch-thumb {
+    width: 22px;  /* Increased thumb size */
+    height: 22px;  /* Increased thumb size */
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    left: 3px;
+    transition: transform 0.3s;
+}
+
+.switch-track.dark .switch-thumb {
+    transform: translateX(28px);
+    background-color: #000;  /* Black thumb in dark mode */
+}
+
+.sun-icon {
+    color: #fff;  /* White icon in light mode */
+    z-index: 1;
+}
+
+.moon-icon {
+    color: #fff;  /* White icon in light mode */
+    z-index: 1;
+}
+
+.switch-track.dark .sun-icon,
+.switch-track.dark .moon-icon {
+    color: #000;  /* Black icons in dark mode */
+}
+
+/* Optional hover effect */
+.theme-toggle-switch:hover .switch-track {
+    opacity: 0.9;
+}

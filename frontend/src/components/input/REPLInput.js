@@ -1,5 +1,5 @@
 import React from 'react';
-import './REPLInputStyles.css';
+import './REPLInput.css';
 
 const REPLInput = ({ input, setInput, isRunning, handleInputSubmit }) => {
     return (

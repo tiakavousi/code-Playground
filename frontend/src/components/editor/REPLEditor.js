@@ -1,4 +1,5 @@
 import React from 'react';
+import './REPLEditor.css';
 import Editor from "@monaco-editor/react";
 
 const REPLEditor = ({
