@@ -163,7 +163,40 @@
     border-radius: 4px;
 }
 
-/* Dark mode styles */
+.repl-title {
+    color: var(--accent-color);
+}
+
+
+/* Style for selected option in the dropdown */
+.repl-select option:checked {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Style for the select when opened (the highlighted option) */
+.repl-select option:hover,
+.repl-select option:focus {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Optional: Style the select itself when focused */
+.repl-select:focus {
+    border-color: var(--accent-color);
+    outline-color: var(--accent-color);
+}
+
+
+/* DARK MODE */
+
+/* Base container dark mode */
+.repl-container.dark-mode {
+    background-color: #1e1e1e;
+    color: --accent-color;
+}
+
+/* Left column dark mode */
 .dark-mode .repl-editor,
 .dark-mode .repl-select,
 .dark-mode .share-link-container,
@@ -171,9 +204,20 @@
 .dark-mode .bottom-controls {
     background-color: #2d2d2d;
     border-color: #404040;
-    color: #ffffff;
+    color: #ffffffc2;
 }
 
+.dark-mode .repl-left-column {
+    border-right-color: #404040;  /* Changed from yellow to match theme */
+}
+
+/* Right column dark mode */
+.repl-container.dark-mode .repl-right-column {
+    background-color: #1e1e1e;
+    border-left: 1px solid #404040;
+}
+
+/* Input area dark mode */
 .dark-mode .repl-input-container,
 .dark-mode .input-field {
     background-color: #2d2d2d;
@@ -181,13 +225,19 @@
     color: #ffffff;
 }
 
+/* Output area dark mode */
 .dark-mode .repl-output {
     background-color: #2d2d2d;
     border-color: #404040;
     color: #ffffff;
 }
 
-/* Dark mode scrollbar */
+/* Scrollbar customization for dark mode */
+.dark-mode .repl-output::-webkit-scrollbar,
+.dark-mode .monaco-editor::-webkit-scrollbar {
+    width: 10px;
+}
+
 .dark-mode .repl-output::-webkit-scrollbar-track,
 .dark-mode .monaco-editor::-webkit-scrollbar-track {
     background: #1e1e1e;
@@ -196,7 +246,25 @@
 .dark-mode .repl-output::-webkit-scrollbar-thumb,
 .dark-mode .monaco-editor::-webkit-scrollbar-thumb {
     background: #555;
+    border-radius: 5px;
 }
-.dark-mode .repl-left-column {
-    border-right-color: yellow;
+
+/* Input and buttons dark mode */
+.repl-container.dark-mode button {
+    background-color: rgb(67, 67, 247)(0, 0, 255, 0.573);
+    color: #ffffff;
+}
+
+.repl-container.dark-mode button:hover {
+    background-color: rgba(0, 0, 255, 0.573);
+}
+
+.repl-container.dark-mode input:focus {
+    outline: 1px solid var(--accent-color);
+}
+
+/* Error messages in dark mode */
+.repl-container.dark-mode .error-message {
+    color: #ff6b6b;
+    background-color: #2d2d2d;
 }
