@@ -38,22 +38,23 @@ const REPLEditor = ({
                         {isRunning ? 'Running...' : 'Run'}
                     </button>
                 </div>
+                <div className="monaco-editor-container">
+                    <Editor
+                        height="100%"
+                        language={language}
+                        value={code}
+                        theme={isDarkMode ? "vs-dark" : "light"}
+                        onChange={handleEditorChange}
+                        onMount={handleEditorDidMount}
+                        onValidate={handleEditorValidation}
+                        options={{
+                            minimap: { enabled: false }
+                        }}
+                        loading={<div>Loading editor...</div>}
+                    />
+                </div>
 
-                <Editor
-                    height="400px"
-                    language={language}
-                    value={code}
-                    theme={isDarkMode ? "vs-dark" : "light"}
-                    onChange={handleEditorChange}
-                    onMount={handleEditorDidMount}
-                    onValidate={handleEditorValidation}
-                    options={{
-                        minimap: { enabled: false }
-                    }}
-                    loading={<div>Loading editor...</div>}
-                />
-
-                <div className="repl-button-group">
+                <div className="bottom-controls">
                     
                     <button
                         onClick={handleSaveAndShare}
