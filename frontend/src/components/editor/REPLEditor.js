@@ -15,19 +15,29 @@ const REPLEditor = ({
     shareLink}) => {
     return(
         <>
-        <div className="repl-editor">
-                <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="repl-select"
-                >
-                    <option value="c">C</option>
-                    <option value="cpp">C++</option>
-                    <option value="python3">Python</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="java">Java</option>
-                    <option value="bash">Bash</option>
-                </select>
+            <div className="repl-editor">
+                <div className="editor-controls">
+                    <select
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value)}
+                        className="repl-select"
+                    >
+                        <option value="c">C</option>
+                        <option value="cpp">C++</option>
+                        <option value="python3">Python</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="java">Java</option>
+                        <option value="bash">Bash</option>
+                    </select>
+
+                    <button
+                        onClick={handleExecute}
+                        disabled={isRunning}
+                        className="repl-button"
+                    >
+                        {isRunning ? 'Running...' : 'Run'}
+                    </button>
+                </div>
 
                 <Editor
                     height="400px"
@@ -44,13 +54,7 @@ const REPLEditor = ({
                 />
 
                 <div className="repl-button-group">
-                    <button
-                        onClick={handleExecute}
-                        disabled={isRunning}
-                        className="repl-button"
-                    >
-                        {isRunning ? 'Running...' : 'Run'}
-                    </button>
+                    
                     <button
                         onClick={handleSaveAndShare}
                         className="repl-button"
@@ -72,9 +76,7 @@ const REPLEditor = ({
                 </div>
             )}
         </>
-
-    )
-   
-}
+    ); 
+};
 
 export default REPLEditor;

@@ -3,6 +3,7 @@ import REPLOutput from './output/REPLOutput';
 import REPLInput from './input/REPLInput';
 import REPLEditor from './editor/REPLEditor';
 import Header from './header/Header';
+import './Main.css';
 
 
 const Main = ({ wsUrl, initialCode = null }) => {
@@ -141,39 +142,53 @@ const Main = ({ wsUrl, initialCode = null }) => {
     };
 
     return (
+        // <div className={`repl-container ${isDarkMode ? 'dark-mode' : ''}`}>
         <div className={`repl-container ${isDarkMode ? 'dark-mode' : ''}`}>
+            {/* Header */}
             <Header
                 isDarkMode={isDarkMode}
                 toggleTheme={toggleTheme}
                 accentColor={accentColor}
                 handleColorChange={handleColorChange}
             />
+            {/* Main content area */}
+            <div className="repl-content">
+                {/* Left column with editor */}
+                <div className="repl-left-column">
+                        <REPLEditor 
+                            language={language}
+                            setLanguage={setLanguage}
+                            code={code}
+                            handleEditorChange={handleEditorChange}
+                            handleEditorDidMount={handleEditorDidMount}
+                            handleEditorValidation={handleEditorValidation}
+                            isDarkMode={isDarkMode}
+                            isRunning={isRunning}
+                            handleExecute={handleExecute}
+                            handleSaveAndShare={handleSaveAndShare}
+                            shareLink={shareLink}
+                        />
+                    </div>
 
-            <REPLEditor 
-                language={language}
-                setLanguage={setLanguage}
-                code={code}
-                handleEditorChange={handleEditorChange}
-                handleEditorDidMount={handleEditorDidMount}
-                handleEditorValidation={handleEditorValidation}
-                isDarkMode={isDarkMode}
-                isRunning={isRunning}
-                handleExecute={handleExecute}
-                handleSaveAndShare={handleSaveAndShare}
-                shareLink={shareLink}
-            />
-
-            <REPLOutput
-                output={output}
-                outputRef={outputRef}
-                accentColor={accentColor}
-            />
-              <REPLInput
-                input={input}
-                setInput={setInput}
-                isRunning={isRunning}
-                handleInputSubmit={handleInputSubmit}
-            />
+                {/* Right column with input and output */}
+                <div className="repl-right-column">
+                    <div className="repl-input-container">
+                        <REPLInput
+                            input={input}
+                            setInput={setInput}
+                            isRunning={isRunning}
+                            handleInputSubmit={handleInputSubmit}
+                        />
+                    </div>
+                    <div className="repl-output">
+                        <REPLOutput
+                            output={output}
+                            outputRef={outputRef}
+                            accentColor={accentColor}
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

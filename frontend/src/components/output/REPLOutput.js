@@ -1,5 +1,5 @@
 import React from 'react';
-import './REPLOutput.css'; // We'll create this CSS file next
+import './REPLOutput.css';
 
 const REPLOutput = ({ output, outputRef, accentColor }) => {
     return (
