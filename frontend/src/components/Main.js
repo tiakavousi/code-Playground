@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Editor from "@monaco-editor/react";
 import REPLOutput from './output/REPLOutput';
 import REPLInput from './input/REPLInput';
+import REPLEditor from './editor/REPLEditor';
 
 
 const Main = ({ wsUrl, initialCode = null }) => {
@@ -170,7 +171,7 @@ const Main = ({ wsUrl, initialCode = null }) => {
                 </div>
             )}
 
-            <div className="repl-editor">
+            {/* <div className="repl-editor">
                 <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
@@ -183,8 +184,6 @@ const Main = ({ wsUrl, initialCode = null }) => {
                     <option value="java">Java</option>
                     <option value="bash">Bash</option>
                 </select>
-                
-                {/* changed */}
 
                 <Editor
                     height="400px"
@@ -228,7 +227,22 @@ const Main = ({ wsUrl, initialCode = null }) => {
                         className="share-link-input"
                     />
                 </div>
-            )}
+            )} */}
+            <REPLEditor 
+                language={language}
+                setLanguage={setLanguage}
+                code={code}
+                setCode={setCode}
+                handleEditorChange={handleEditorChange}
+                handleEditorWillMount={handleEditorWillMount}
+                handleEditorDidMount={handleEditorDidMount}
+                handleEditorValidation={handleEditorValidation}
+                isDarkMode={isDarkMode}
+                isRunning={isRunning}
+                handleExecute={handleExecute}
+                handleSaveAndShare={handleSaveAndShare}
+                shareLink={shareLink}
+            />
 
             <REPLOutput
                 output={output}
@@ -241,23 +255,6 @@ const Main = ({ wsUrl, initialCode = null }) => {
                 isRunning={isRunning}
                 handleInputSubmit={handleInputSubmit}
             />
-
-            {/* <form onSubmit={handleInputSubmit} className="repl-input-form">
-                <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Enter input here..."
-                    className="repl-input"
-                />
-                <button
-                    type="submit"
-                    disabled={!isRunning}
-                    className="repl-submit-button"
-                >
-                    Send Input
-                </button>
-            </form> */}
         </div>
     );
 };
