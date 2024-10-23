@@ -1,5 +1,6 @@
 import React from 'react';
 import Editor from "@monaco-editor/react";
+import LanguageSelector from './LanguageSelector';
 
 const REPLEditor = ({
     language,
@@ -29,6 +30,10 @@ const REPLEditor = ({
                         <option value="java">Java</option>
                         <option value="bash">Bash</option>
                     </select>
+                    {/* <LanguageSelector 
+                        value={language}
+                        setLanguage={setLanguage}
+                    /> */}
 
                     <button
                         onClick={handleExecute}

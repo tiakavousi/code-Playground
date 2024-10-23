@@ -251,12 +251,8 @@
 
 /* Input and buttons dark mode */
 .repl-container.dark-mode button {
-    background-color: rgb(67, 67, 247)(0, 0, 255, 0.573);
+    background-color: var(--accent-color);
     color: #ffffff;
-}
-
-.repl-container.dark-mode button:hover {
-    background-color: rgba(0, 0, 255, 0.573);
 }
 
 .repl-container.dark-mode input:focus {
@@ -265,6 +261,6 @@
 
 /* Error messages in dark mode */
 .repl-container.dark-mode .error-message {
-    color: #ff6b6b;
+    color: var(--accent-color);
     background-color: #2d2d2d;
 }

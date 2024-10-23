@@ -3,17 +3,18 @@ import REPLOutput from './output/REPLOutput';
 import REPLInput from './input/REPLInput';
 import REPLEditor from './editor/REPLEditor';
 import Header from './header/Header';
+// import LanguageSelector from './editor/LanguageSelector';
 import './Main.css';
 
 
 const Main = ({ wsUrl, initialCode = null }) => {
     const [code, setCode] = useState(''); // Holds the code entered by the user
-    const [language, setLanguage] = useState('Python'); // Selected programming language
+    const [language, setLanguage] = useState(''); // Initially empty, no language selected
     const [output, setOutput] = useState(''); // Holds the result/output of the executed code
     const [isRunning, setIsRunning] = useState(false); // Flag indicating if code execution is in progress
     const [input, setInput] = useState('');  // Stores any input to be sent during execution
     const [error, setError] = useState(null); // Handles any error messages
-    const [isDarkMode, setIsDarkMode] = useState(false); // Toggle for dark/light mode
+    const [isDarkMode, setIsDarkMode] = useState(true); // Toggle for dark/light mode
     const [accentColor, setAccentColor] = useState('#007bff'); // Customizable accent color
     const [shareLink, setShareLink] = useState(''); // Holds the link to share code
     const outputRef = useRef(null); // Reference to the output area for scrolling
@@ -31,7 +32,7 @@ const Main = ({ wsUrl, initialCode = null }) => {
     useEffect(() => {
         if (initialCode) {
             setCode(initialCode.code || '');
-            setLanguage(initialCode.language || 'Python');
+            setLanguage(initialCode.language);
         }
     }, [initialCode]);
 
