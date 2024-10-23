@@ -12,7 +12,6 @@ bin/
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
-*.html
 
 # Project local workspace files
 .vscode/
@@ -60,11 +59,17 @@ tmp/
 # Environment files
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
 .env.*.local
+
+npm-debug.log*
 
 
 .DS_STORE
 frontend/node_modules
+frontend/build
 node_modules
 scripts/flow/*/.flowconfig
 .flowconfig
