@@ -31,7 +31,6 @@ services:
     command: echo "Code execution container ready"
     deploy:
       replicas: 0 # This ensures the container doesn't actually run, we just want the image
-    pull_policy: always # This ensures the image is always pulled
 
 networks:
   default:

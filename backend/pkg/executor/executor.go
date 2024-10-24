@@ -39,7 +39,7 @@ func (s *Service) ExecuteInteractive(ctx context.Context, req ExecRequest, input
 	}
 
 	// Create execution context
-	execCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	execCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	// Run the code
@@ -63,7 +63,7 @@ func (s *Service) Execute(req ExecRequest) (string, error) {
 	}
 
 	// Create execution context
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10 *time.Second)
 	defer cancel()
 
 	// Create channels for communication
@@ -89,7 +89,7 @@ func (s *Service) Execute(req ExecRequest) (string, error) {
 		case err := <-errCh:
 			return result.String(), err
 		case <-ctx.Done():
-			return result.String(), fmt.Errorf("execution timed out after %v: %w", 60*time.Second, ctx.Err())
+			return result.String(), fmt.Errorf("execution timed out after %v: %w", 10 *time.Second, ctx.Err())
 		}
 	}
 }
