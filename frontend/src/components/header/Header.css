@@ -1,33 +1,34 @@
 /* Header container */
 .header {
-    width: 100%;
-    padding: 1rem;
-    background-color: transparent;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
-
 .repl-title {
-    color: var(--accent-color);
-    margin: 0;
+    color: rgb(141, 140, 140);
+    font-size: 34px; 
+    padding-top: 35px;
+    display: flex;
+    justify-content: flex-start;
+}
+.repl-controls {
+    display: flex;
+    padding-bottom: 60px;
+    justify-content: flex-end;
 }
 
 /* Switch styles */
 .theme-toggle-switch {
     background: none;
     border: none;
-    padding: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
 }
 
 .switch-track {
-    width: 56px;  /* Increased width */
-    height: 28px;  /* Increased height */
-    background-color: #000;  /* Black for light mode */
-    border-radius: 14px;  /* Half of height */
+    width: 56px; 
+    height: 28px;  
+    background-color: #000; 
+    border-radius: 14px;
     position: relative;
     transition: background-color 0.3s;
     display: flex;
@@ -68,9 +69,4 @@
 .switch-track.dark .sun-icon,
 .switch-track.dark .moon-icon {
     color: #000;  /* Black icons in dark mode */
-}
-
-/* Optional hover effect */
-.theme-toggle-switch:hover .switch-track {
-    opacity: 0.9;
 }

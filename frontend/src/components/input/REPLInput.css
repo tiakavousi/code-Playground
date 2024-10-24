@@ -38,9 +38,7 @@
     cursor: not-allowed;
 }
 
-.repl-submit-button:hover:not(:disabled) {
-    opacity: 0.9;
-}
+
 
 
 .dark-mode .repl-input-form {
@@ -79,6 +77,10 @@
     padding: 0.5rem;
     border: 1px solid #dee2e6;
     border-radius: 4px;
+}
+.repl-submit-button:hover:not(:disabled) {
+    background-color: #f4f5f7;
+    color:#000;
 }
 
 /* Dark mode styles */

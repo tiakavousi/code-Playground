@@ -32,7 +32,7 @@
 /* Dark mode base styles */
 .repl-container.dark-mode {
     background-color: #1e1e1e;
-    color: var(--accent-color);
+    /* color: var(--accent-color); */
 }
 
 .dark-mode .repl-left-column {
@@ -46,16 +46,14 @@
 
 /* General dark mode button styles */
 .repl-container.dark-mode button {
-    /* background-color: var(--accent-color); */
+    background-color: #626262;
     color: #ffffff;
 }
 
-.repl-container.dark-mode input:focus {
-    outline: 1px solid var(--accent-color);
-}
 
 /* Error messages in dark mode */
 .repl-container.dark-mode .error-message {
-    color: var(--accent-color);
+    /* color: var(--accent-color); */
+    color:rgb(254, 254, 249);
     background-color: #2d2d2d;
 }

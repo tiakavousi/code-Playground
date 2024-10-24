@@ -13,12 +13,12 @@ const Header = ({ isDarkMode, toggleTheme, accentColor, handleColorChange }) => 
                     aria-label="Toggle dark mode"
                 >
                     <div className={`switch-track ${isDarkMode ? 'dark' : ''}`}>
-                    <HiSun className="sun-icon" size={16} />
-                    <HiMoon className="moon-icon" size={16} />
+                    <HiSun className="sun-icon" size={20} />
+                    <HiMoon className="moon-icon" size={20} />
                     <div className="switch-thumb" />
                     </div>
                 </button>
-                <div className="repl-color-picker">
+                {/* <div className="repl-color-picker">
                     <label htmlFor="colorPicker" className="repl-color-picker-label">Accent:</label>
                     <input
                         type="color"
@@ -26,7 +26,7 @@ const Header = ({ isDarkMode, toggleTheme, accentColor, handleColorChange }) => 
                         value={accentColor}
                         onChange={handleColorChange}
                     />
-                </div>
+                </div> */}
             </div>
         </div>
     );

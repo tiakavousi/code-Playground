@@ -43,7 +43,8 @@
 }
 
 .repl-button:hover:not(:disabled) {
-    background-color: #0056b3;
+    background-color: #f4f5f7;
+    color:#000;
 }
 
 /* Bottom controls */
@@ -74,7 +75,7 @@
 /* Monaco Editor scrollbar */
 .monaco-editor::-webkit-scrollbar {
     width: 8px;
-}
+} */
 
 .monaco-editor::-webkit-scrollbar-track {
     background: #f1f1f1;
@@ -100,5 +101,6 @@
 }
 
 .dark-mode .monaco-editor::-webkit-scrollbar-thumb {
-    background: #555;
+    background: #000;
 }
+

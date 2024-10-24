@@ -3,7 +3,6 @@ import REPLOutput from './output/REPLOutput';
 import REPLInput from './input/REPLInput';
 import REPLEditor from './editor/REPLEditor';
 import Header from './header/Header';
-// import LanguageSelector from './editor/LanguageSelector';
 import './Main.css';
 
 
@@ -48,7 +47,6 @@ const Main = ({ wsUrl, initialCode = null }) => {
         setIsEditorReady(true);
     }
 
-
     // Logs any validation markers (warnings/errors) from the Monaco editor
     const handleEditorValidation = (markers) => {
         markers.forEach((marker) => console.log('onValidate:', marker.message));
@@ -65,6 +63,7 @@ const Main = ({ wsUrl, initialCode = null }) => {
         setOutput('');
         setError(null);
         console.log('Executing code:', code); // Debug log
+        console.log('Language:', language); // Debug log
 
         try {
             // Establish WebSocket connection to send and execute the code on the backend
