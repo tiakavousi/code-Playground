@@ -1,19 +1,27 @@
 /* Header container */
-.header {
-    display: flex;
+
+.column {
+    float: left;
+    width: 50%;
 }
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
 .repl-title {
-    color: rgb(141, 140, 140);
-    font-size: 34px; 
-    padding-top: 35px;
-    display: flex;
-    justify-content: flex-start;
+    color: #3585d6; 
+    font-size: 34px;
+    font-family: "Lucida Console", "Courier New", monospace;
 }
+
 .repl-controls {
     display: flex;
-    padding-bottom: 60px;
     justify-content: flex-end;
 }
+
+
 
 /* Switch styles */
 .theme-toggle-switch {
@@ -27,7 +35,7 @@
 .switch-track {
     width: 56px; 
     height: 28px;  
-    background-color: #000; 
+    background-color: #3585d6;
     border-radius: 14px;
     position: relative;
     transition: background-color 0.3s;
@@ -38,7 +46,7 @@
 }
 
 .switch-track.dark {
-    background-color: #fff;
+    background-color: #3585d6;
 }
 
 .switch-thumb {

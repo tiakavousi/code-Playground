@@ -4,29 +4,18 @@ import './Header.css';
 
 const Header = ({ isDarkMode, toggleTheme, accentColor, handleColorChange }) => {
     return (
-        <div className="repl-header">
-            <h1 className="repl-title">Playground</h1>
-            <div className="repl-controls">
-                <button 
-                    onClick={toggleTheme}
-                    className="theme-toggle-switch"
-                    aria-label="Toggle dark mode"
-                >
+        <div className="row repl-header">
+            <div className='column repl-title'>
+                <h1 className='title'>Code Playground</h1>
+            </div>
+            <div className="column repl-controls">
+                <button onClick={toggleTheme} className="theme-toggle-switch" aria-label="Toggle dark mode">
                     <div className={`switch-track ${isDarkMode ? 'dark' : ''}`}>
-                    <HiSun className="sun-icon" size={20} />
-                    <HiMoon className="moon-icon" size={20} />
-                    <div className="switch-thumb" />
+                        <HiSun className="sun-icon" size={20} />
+                        <HiMoon className="moon-icon" size={20} />
+                        <div className="switch-thumb" />
                     </div>
                 </button>
-                {/* <div className="repl-color-picker">
-                    <label htmlFor="colorPicker" className="repl-color-picker-label">Accent:</label>
-                    <input
-                        type="color"
-                        id="colorPicker"
-                        value={accentColor}
-                        onChange={handleColorChange}
-                    />
-                </div> */}
             </div>
         </div>
     );

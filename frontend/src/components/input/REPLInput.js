@@ -3,6 +3,7 @@ import './REPLInput.css';
 
 const REPLInput = ({ input, setInput, isRunning, handleInputSubmit }) => {
     return (
+        <div>
         <form onSubmit={handleInputSubmit} className="repl-input-form">
             <input
                 type="text"
@@ -14,11 +15,16 @@ const REPLInput = ({ input, setInput, isRunning, handleInputSubmit }) => {
             <button
                 type="submit"
                 disabled={!isRunning}
-                className="repl-submit-button"
+                className="repl-button"
             >
-                Send Input
+                Send
             </button>
+            
         </form>
+        <div className="instruction">
+                Please enter your input and click "Send Input" to submit.
+            </div>
+        </div>
     );
 };
 

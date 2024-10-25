@@ -4,6 +4,12 @@
     flex-direction: column;
     min-height: 100vh;
     width: 100%;
+    padding:1%;
+}
+
+/* Main container Dark mode */
+.repl-container.dark-mode {
+    background-color: #1e1e1e;
 }
 
 /* Main content area - Two Column Layout */
@@ -28,30 +34,66 @@
     flex-direction: column;
     width: 50%;
 }
-
-/* Dark mode base styles */
-.repl-container.dark-mode {
-    background-color: #1e1e1e;
-}
-
-.dark-mode .repl-left-column {
-    border-right-color: #404040;
+/* Dark Mode Styles for Columns */
+.repl-container.dark-mode .repl-left-column {
+    background-color: #222; /* Darker background for left column */
+    border-right: 1px solid #444; /* Darker border for left column */
 }
 
 .repl-container.dark-mode .repl-right-column {
-    background-color: #1e1e1e;
-    border-left: 1px solid #404040;
+    background-color: #222; /* Darker background for right column */
 }
 
-/* General dark mode button styles */
-.repl-container.dark-mode button {
-    background-color: #626262;
-    color: #ffffff;
+/* input container */
+.repl-input-container {
+    width: 100%;
+    font-family: monospace;
+    padding: 1rem;
+    padding-bottom: 0;
 }
 
+.repl-input-container.dark-mode{
+    background-color: #343436;
+}
 
-/* Error messages in dark mode */
-.repl-container.dark-mode .error-message {
-    color:rgb(254, 254, 249);
-    background-color: #2d2d2d;
+/* buttons general style light mode*/
+.repl-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--accent-color, #007bffa8);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.repl-button:hover:not(:disabled) {
+    background-color:   #2e90f9a8;
+    color:#000;
+}
+
+.repl-button:disabled {
+    background-color: var(--accent-color, #007bff);
+    cursor: not-allowed;
+}
+
+/* buttons general style dark mode*/
+.dark-mode .repl-button:hover:not(:disabled) {
+    background-color:  #2e90f9a8;
+}
+
+@media (max-width: 768px) {
+    .repl-content {
+        flex-direction: column;
+    }
+
+    .repl-left-column,
+    .repl-right-column {
+        width: 100%;
+        border: none;
+    }
 }

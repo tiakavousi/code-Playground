@@ -172,7 +172,7 @@ const Main = ({ wsUrl, initialCode = null }) => {
 
                 {/* Right column with input and output */}
                 <div className="repl-right-column">
-                    <div className="repl-input-container">
+                    <div className={`repl-input-container ${isDarkMode ? 'dark-mode' : ''}`}>
                         <REPLInput
                             input={input}
                             setInput={setInput}
