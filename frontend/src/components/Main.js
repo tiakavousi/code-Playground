@@ -177,14 +177,16 @@ const Main = ({ wsUrl, initialCode = null }) => {
                             input={input}
                             setInput={setInput}
                             isRunning={isRunning}
+                            isDarkMode={isDarkMode}
                             handleInputSubmit={handleInputSubmit}
                         />
                     </div>
+                    <p className='output-text'> Output: </p>
                     <div className="repl-output">
                         <REPLOutput
                             output={output}
                             outputRef={outputRef}
-                            accentColor={accentColor}
+                            isDarkMode={isDarkMode}
                         />
                     </div>
                 </div>

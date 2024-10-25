@@ -4,20 +4,28 @@
     align-items: center;
     width: 100%;
     gap: 8px;
+   
 }
+
 .repl-input {
     flex: 1;
     padding: 0.5rem;
-    border: 1px solid #3585d6; 
+    border: 1px solid white; 
     border-radius: 4px;
-    margin-right: 0.5rem;
+    font-size: smaller;
+    
+}
+.repl-input.dark-mode {
+    background-color: black;
+    border: 1px solid black; 
 }
 .instruction {
-    margin-top: 8px;
-    padding: 0.5rem;
     flex: 1;
-    font-size: 0.9rem; 
+    font-size: smaller;
     text-align: left;
+}
+.instruction.dark-mode p{
+    color: #ddd; 
 }
 
 

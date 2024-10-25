@@ -1,12 +1,14 @@
 /* Output area styles */
+
+
 .repl-output {
-    padding: 1rem;
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
     border-radius: 4px;
-    height: 50vh !important;
-    max-height: 50vh;
+    height: 60vh !important;
+    max-height: 60vh;
     overflow-y: auto;
+    font-size: smaller;
 }
 
 /* Scrollbar styling */
@@ -25,8 +27,8 @@
 
 /* Dark mode styles */
 .dark-mode .repl-output {
-    background-color: #2d2d2d;
-    border-color: #404040;
+    background-color: black;
+    border-color: black;
     color: #ffffff;
 }
 
