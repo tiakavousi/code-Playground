@@ -40,15 +40,29 @@ sayHello();
 
 ## Integer Input needed JavaScript Program:
 ```
-function addFive(number) {
-    return number + 5;
-}
+const readline = require('readline');
 
-// Prompt user for input
-const number = parseInt(prompt("Enter a number: "), 10);
+// Create an interface for reading input from the user
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
-// Call the function and log the result
-console.log("Result: " + addFive(number));
+// Ask the user for a number
+rl.question("Enter a number: ", function(input) {
+    const number = parseInt(input, 10);
+
+    // Check if the input is a valid number
+    if (!isNaN(number)) {
+        const result = number + 5;
+        console.log("Result: " + result);
+    } else {
+        console.log("Please enter a valid number.");
+    }
+
+    // Close the readline interface
+    rl.close();
+});
 
 ```
 ---

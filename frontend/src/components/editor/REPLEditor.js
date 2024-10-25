@@ -54,28 +54,6 @@ const REPLEditor = ({
                         }}
                         loading={<div>Loading editor...</div>}
                     />
-
-                    {/* <textarea
-                        className="repl-editor-textarea"
-                        value={code}
-                        onChange={(e) => handleEditorChange(e.target.value)}
-                        spellCheck="false"
-                        style={{
-                            height: "100%",
-                            width: "100%",
-                            resize: "none",
-                            padding: "1rem",
-                            fontFamily: "monospace",
-                            fontSize: "14px",
-                            lineHeight: "1.5",
-                            backgroundColor: isDarkMode ? "#1e1e1e" : "#ffffff",
-                            color: isDarkMode ? "#d4d4d4" : "#000000",
-                            border: "1px solid",
-                            borderColor: isDarkMode ? "#404040" : "#dee2e6",
-                            borderRadius: "4px",
-                            outline: "none"
-                        }}
-                    /> */}
                 </div>
 
                 <div className="bottom-controls">

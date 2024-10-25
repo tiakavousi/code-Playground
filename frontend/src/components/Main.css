@@ -32,7 +32,6 @@
 /* Dark mode base styles */
 .repl-container.dark-mode {
     background-color: #1e1e1e;
-    /* color: var(--accent-color); */
 }
 
 .dark-mode .repl-left-column {
@@ -53,7 +52,6 @@
 
 /* Error messages in dark mode */
 .repl-container.dark-mode .error-message {
-    /* color: var(--accent-color); */
     color:rgb(254, 254, 249);
     background-color: #2d2d2d;
 }

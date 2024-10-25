@@ -1,4 +1,4 @@
-/* Editor container */
+Editor container
 .repl-editor {
     display: flex;
     flex-direction: column;
@@ -46,6 +46,9 @@
     background-color: #f4f5f7;
     color:#000;
 }
+.dark-mode .repl-button:hover:not(:disabled) {
+    background-color: #3a3a3a; /* Darker hover color for dark mode */
+}
 
 /* Bottom controls */
 .bottom-controls {
@@ -75,7 +78,7 @@
 /* Monaco Editor scrollbar */
 .monaco-editor::-webkit-scrollbar {
     width: 8px;
-} */
+}
 
 .monaco-editor::-webkit-scrollbar-track {
     background: #f1f1f1;
