@@ -8,7 +8,7 @@ import './Main.css';
 
 const Main = ({ wsUrl, initialCode = null }) => {
     const [code, setCode] = useState(''); // Holds the code entered by the user
-    const [language, setLanguage] = useState(''); // Initially empty, no language selected
+    const [language, setLanguage] = useState('c'); // Initially language c selected
     const [output, setOutput] = useState(''); // Holds the result/output of the executed code
     const [isRunning, setIsRunning] = useState(false); // Flag indicating if code execution is in progress
     const [input, setInput] = useState('');  // Stores any input to be sent during execution

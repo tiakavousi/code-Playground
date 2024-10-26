@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './REPLEditor.css';
 import Editor from "@monaco-editor/react";
 
@@ -14,6 +14,41 @@ const REPLEditor = ({
     handleExecute,
     handleSaveAndShare,
     shareLink}) => {
+
+        const languageMap = {
+            c: {
+                id: "c",
+                placeholder: "// write code here ..."
+            },
+            cpp: {
+                id: "cpp",
+                placeholder: "// write code here ..."
+            },
+            python: {
+                id: "python",
+                placeholder: "# write code here ..."
+            },
+            javascript: {
+                id: "javascript",
+                placeholder: "// write code here ..."
+            },
+            java: {
+                id: "java",
+                placeholder: "// write code here ..."
+            },
+            bash: {
+                id: "bash",
+                placeholder: "# write code here ..."
+            }
+        };
+    
+        const [currentCode, setCurrentCode] = useState(languageMap[language]?.placeholder || "");
+    
+        // Update placeholder when the language changes
+        useEffect(() => {
+            setCurrentCode(languageMap[language]?.placeholder || "");
+        }, [language]);
+    
     return(
         <>
             <div className="repl-editor">
@@ -42,11 +77,18 @@ const REPLEditor = ({
                 <div className="monaco-editor-container">
                     <Editor
                         height="100%"
-                        language={language}
-                        defaultValue="//write code here ..."
-                        value={code}
+                        // language={language}
+                        language={languageMap[language]?.id}
+                        defaultValue={languageMap[language]?.placeholder}
+                        value={currentCode}
+                        // value={code}
                         theme={isDarkMode ? "vs-dark" : "light"}
-                        onChange={handleEditorChange}
+                        // onChange={handleEditorChange}
+                        onChange={(newValue) => {
+                            console.log("editor value changing: ", newValue);
+                            setCurrentCode(newValue); // Update local code state
+                            handleEditorChange(newValue); // Call external handler
+                        }}
                         onMount={handleEditorDidMount}
                         onValidate={handleEditorValidation}
                         options={{
@@ -62,7 +104,7 @@ const REPLEditor = ({
                         onClick={handleSaveAndShare}
                         className="repl-button"
                     >
-                        Save & Share
+                        Share
                     </button>
                 </div>
             </div>

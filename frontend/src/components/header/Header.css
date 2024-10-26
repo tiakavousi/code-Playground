@@ -1,7 +1,6 @@
 @import '../../styles/variables.css';
 
 /* Header container */
-
 .column {
     float: left;
     width: 50%;
@@ -15,8 +14,9 @@
 
 .repl-title {
     color: var(--text-dark); 
-    font-size: 12px;
-    font-family: monospace;
+    font-size: var(--font-size-medium);
+    font-weight: 600;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 .dark-mode .repl-title {

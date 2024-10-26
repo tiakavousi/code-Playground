@@ -4,12 +4,12 @@ import './REPLOutput.css';
 const REPLOutput = ({ output, outputRef, isDarkMode }) => {
     return (
         <div className={`repl-output-container ${isDarkMode ? 'dark-mode' : ''}`}>
-                <pre 
+                <div 
                     ref={outputRef} 
                     className="repl-output-content"
                 >
-                    {output}
-                </pre>
+                    {output || "No Output Yet..."}
+                </div>
         </div>
     );
 };

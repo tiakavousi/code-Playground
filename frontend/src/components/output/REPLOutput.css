@@ -8,7 +8,9 @@
     height: 60vh !important;
     max-height: 60vh;
     overflow-y: auto;
-    font-size: smaller;
+    font-size: 0.1rem;
+    padding:0.2rem;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 /* Scrollbar styling */
@@ -29,7 +31,7 @@
 .dark-mode .repl-output {
     background-color: var(--black-background);
     border:none;
-    color: var(--light-text);
+    color: var(--text-light);
 }
 
 .dark-mode .repl-output::-webkit-scrollbar-track {

@@ -12,17 +12,21 @@
     padding: 0.5rem;
     border: 1px solid white; 
     border-radius: 4px;
-    font-size: smaller;
+    font-size: 0.1rem;
+    padding:0.2rem;
+    font-family: 'Courier New', Courier, monospace;
     
 }
 .repl-input.dark-mode {
     background-color: black;
-    border: 1px solid black; 
+    border: 1px solid black;
+    color: var(--text-light);
 }
 .instruction {
     flex: 1;
-    font-size: smaller;
     text-align: left;
+    font-size: 0.1rem;
+    font-family: 'Courier New', Courier, monospace;
 }
 .instruction.dark-mode p{
     color: #ddd; 

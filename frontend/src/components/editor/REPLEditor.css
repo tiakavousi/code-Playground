@@ -6,6 +6,11 @@
     border: 1px solid var(--light-border);
     border-radius: 4px;
 }
+.repl-select{
+    font-size: var(--font-size-medium);
+    font-weight: 600;
+    font-family: 'Courier New', Courier, monospace;
+}
 
 /* Editor controls */
 .editor-controls {
