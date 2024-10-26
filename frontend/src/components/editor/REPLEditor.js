@@ -42,12 +42,17 @@ const REPLEditor = ({
             }
         };
     
-        const [currentCode, setCurrentCode] = useState(languageMap[language]?.placeholder || "");
+        const [currentCode, setCurrentCode] = useState( code || languageMap[language]?.placeholder || "");
     
         // Update placeholder when the language changes
         useEffect(() => {
+            // If there's initial code, use it; otherwise use the placeholder
+            if (code) {
+                setCurrentCode(code);
+            } else {
             setCurrentCode(languageMap[language]?.placeholder || "");
-        }, [language]);
+            }
+        }, [code, language]);
     
     return(
         <>
@@ -79,7 +84,7 @@ const REPLEditor = ({
                         height="100%"
                         // language={language}
                         language={languageMap[language]?.id}
-                        defaultValue={languageMap[language]?.placeholder}
+                        defaultValue={code || languageMap[language]?.placeholder}
                         value={currentCode}
                         // value={code}
                         theme={isDarkMode ? "vs-dark" : "light"}

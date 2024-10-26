@@ -31,18 +31,25 @@
 /* Share link styles */
 .share-link-container {
     margin-top: 1rem;
-    padding: 1rem;
+    margin-bottom: 0;
     background-color: var(--light-background);
     border-radius: 4px;
+    font-size: var(--font-size-medium);
+    font-family: 'Courier New', Courier, monospace;
+}
+.dark-mode .share-link-input{
+    background-color: var(--black-background);
+    color: var(--text-light);
+    border: none;
 }
 
 .share-link-input {
     width: 100%;
     padding: 0.5rem;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--light-border);
     border-radius: 4px;
-    margin-top: 0.5rem;
 }
+
 
 /* Monaco Editor scrollbar */
 .monaco-editor::-webkit-scrollbar {
@@ -61,11 +68,10 @@
 /* Dark mode styles */
 .dark-mode .repl-editor,
 .dark-mode .share-link-container,
-.dark-mode .share-link-input,
 .dark-mode .bottom-controls {
     background-color: var(--dark-background);
     border-color: var(--dark-border);
-    color: #ffffffc2;
+    color: var(--text-light);
 }
 
 .dark-mode .monaco-editor::-webkit-scrollbar-track {
@@ -76,3 +82,6 @@
     background: #000;
 }
 
+.repl-button{
+    margin-top: 1rem;
+}

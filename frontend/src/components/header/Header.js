@@ -2,7 +2,7 @@ import React from 'react';
 import { HiSun, HiMoon } from 'react-icons/hi';
 import './Header.css';
 
-const Header = ({ isDarkMode, toggleTheme, accentColor, handleColorChange }) => {
+const Header = ({ isDarkMode, toggleTheme }) => {
     return (
         <div className="row repl-header">
             <div className='column repl-title'>

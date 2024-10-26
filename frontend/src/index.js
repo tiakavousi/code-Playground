@@ -8,6 +8,6 @@ const wsUrl = process.env.REACT_APP_WS_URL || 'localhost:8080';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App wsUrl={wsUrl} />
+    <App wsUrl={wsUrl} /> {/* Pass the WebSocket URL as a prop to the App component */}
   </React.StrictMode>
 );

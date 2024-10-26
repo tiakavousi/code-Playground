@@ -14,18 +14,11 @@ const Main = ({ wsUrl, initialCode = null }) => {
     const [input, setInput] = useState('');  // Stores any input to be sent during execution
     const [error, setError] = useState(null); // Handles any error messages
     const [isDarkMode, setIsDarkMode] = useState(true); // Toggle for dark/light mode
-    const [accentColor, setAccentColor] = useState('#007bff'); // Customizable accent color
     const [shareLink, setShareLink] = useState(''); // Holds the link to share code
     const outputRef = useRef(null); // Reference to the output area for scrolling
     const ws = useRef(null); // WebSocket connection reference
     const editorRef = useRef(null); // Reference to the Monaco editor instance
     const [isEditorReady, setIsEditorReady] = useState(false); // Tracks if the editor is fully mounted
-
-    // Updates the accent color across the application
-    useEffect(() => {
-        document.documentElement.style.setProperty('--accent-color', accentColor);
-    }, [accentColor]);
-
 
     // Sets the initial code and language when component mounts
     useEffect(() => {
@@ -62,22 +55,18 @@ const Main = ({ wsUrl, initialCode = null }) => {
         setIsRunning(true);
         setOutput('');
         setError(null);
-        console.log('Executing code:', code); // Debug log
-        console.log('Language:', language); // Debug log
 
         try {
             // Establish WebSocket connection to send and execute the code on the backend
             ws.current = new WebSocket(`ws://${wsUrl}/execute`);
             ws.current.onopen = () => {
-                console.log('WebSocket connection established');
-                ws.current.send(JSON.stringify({ language, code })); // Sends code and language to the server
+                // Sends code and language to the server
+                ws.current.send(JSON.stringify({ language, code })); 
             };
 
             // Receive and append execution output to the output area       
             ws.current.onmessage = (event) => {
-                console.log("Received message:", event.data); // Log incoming message
                 setOutput(prev => prev + event.data + '\n');
-                console.log ("output: " + event.data);
                 // Auto-scroll the output to the bottom as new messages arrive
                 if (outputRef.current) {
                     outputRef.current.scrollTop = outputRef.current.scrollHeight;
@@ -85,18 +74,15 @@ const Main = ({ wsUrl, initialCode = null }) => {
             };
 
             ws.current.onclose = () => {
-                console.log('WebSocket connection closed');
                 setIsRunning(false);
             };
 
             ws.current.onerror = (event) => {
-                console.error('WebSocket error:', event);
                 setError('WebSocket error occurred. Check console for details.');
                 setIsRunning(false);
             };
 
         } catch (err) {
-            console.error('Error setting up WebSocket:', err);
             setError(`Error: ${err.message}`);
             setIsRunning(false);
         }
@@ -113,10 +99,6 @@ const Main = ({ wsUrl, initialCode = null }) => {
         }
     };
 
-    // Updates the accent color for UI customization
-    const handleColorChange = (e) => {
-        setAccentColor(e.target.value);
-    };
 
     // Handles saving the current code to the server and generating a shareable link
     const handleSaveAndShare = async () => {
@@ -148,8 +130,6 @@ const Main = ({ wsUrl, initialCode = null }) => {
             <Header
                 isDarkMode={isDarkMode}
                 toggleTheme={toggleTheme}
-                accentColor={accentColor}
-                handleColorChange={handleColorChange}
             />
             {/* Main content area */}
             <div className="repl-content">

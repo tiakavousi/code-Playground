@@ -20,8 +20,10 @@ function SharedCodeLoader({ wsUrl }) {
           return response.json();
         })
         .then(data => {
+          console.log("data: ", data);
           setSharedCode(data);
           setIsLoading(false);
+          console.log("testing shared code")
         })
         .catch(error => {
           console.error('Error fetching shared code:', error);
