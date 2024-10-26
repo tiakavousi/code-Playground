@@ -1,29 +1,4 @@
-/* Light Mode Styles */
-:root {
-    color: #333; /* Dark text color for light mode */
-;
-}
-
-/* Dark Mode Styles */
-body.dark-mode {
-    color: #ddd; /* Light text color for dark mode */
-}
-
-p {
-    font-size: smaller;
-}
-
-
-.dark-mode .output-text {
-    color: #ddd;
-    font-size: smaller;
-    font-weight: 600;
-    padding-top: 1%;
-}
-
-p.dark-mode{
-    color: #ddd;
-}
+@import '../styles/variables.css';
 
 /* Main container styles */
 .repl-container {
@@ -32,11 +7,11 @@ p.dark-mode{
     min-height: 100vh;
     width: 100%;
     padding:1%;
+    background-color: var(--light-background);
 }
 
-/* Main container Dark mode */
 .repl-container.dark-mode {
-    background-color: #1e1e1e;
+    background-color: var(--dark-background);
 }
 
 /* Main content area - Two Column Layout */
@@ -51,7 +26,8 @@ p.dark-mode{
 .repl-left-column {
     flex: 1;
     width: 50%;
-    border-right: 1px solid #dee2e6;
+    border-right: 1px solid var(--light-border);
+    background-color: var(--light-background);
 }
 
 /* Right column */
@@ -61,16 +37,17 @@ p.dark-mode{
     flex-direction: column;
     width: 50%;
     padding-left: 1%;
+    background-color: var(--light-background);
 }
 
-/* Dark Mode Styles for Columns */
+/* Columns */
 .repl-container.dark-mode .repl-left-column {
-    background-color: #222; /* Darker background for left column */
-    border-right: 1px solid #444; /* Darker border for left column */
+    background-color: var(--dark-background);
+    border-right: 1px solid var(--dark-border); 
 }
 
 .repl-container.dark-mode .repl-right-column {
-    background-color: #222; /* Darker background for right column */
+    background-color: var(--dark-background); 
 }
 
 /* input container */
@@ -81,7 +58,20 @@ p.dark-mode{
 }
 
 .repl-input-container.dark-mode{
-    background-color: #343436;
+    background-color: var(--dark-background);
+    border: 1px solid var(--dark-border);
+}
+
+/* output title */
+.output-text {
+    color: var(--dark-light);
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    padding-top: 1%;
+}
+
+.dark-mode .output-text {
+    color: var(--text-light);
 }
 
 /* buttons general style light mode*/
@@ -89,29 +79,24 @@ p.dark-mode{
     padding: 0.5rem 1rem;
     border: none;
     border-radius: 4px;
-    background-color: var(--accent-color, #007bffa8);
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--text-light);
     cursor: pointer;
-    transition: background-color 0.2s;
-    height: 38px;
+    transition: background-color 0.8s;
+    height: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: var(--font-size-small);
 }
 
 .repl-button:hover:not(:disabled) {
-    background-color:   #2e90f9a8;
-    color:#000;
+    background-color:var(--hover-color);
+    color: var(--black);
 }
 
 .repl-button:disabled {
-    background-color: var(--accent-color, #007bff);
     cursor: not-allowed;
-}
-
-/* buttons general style dark mode*/
-.dark-mode .repl-button:hover:not(:disabled) {
-    background-color:  #2e90f9a8;
 }
 
 @media (max-width: 768px) {

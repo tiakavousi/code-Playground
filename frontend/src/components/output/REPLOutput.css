@@ -1,8 +1,8 @@
-/* Output area styles */
 
+@import '../../styles/variables.css';
 
 .repl-output {
-    background-color: #f8f9fa;
+    background-color:var(--white-background);
     border: 1px solid #dee2e6;
     border-radius: 4px;
     height: 60vh !important;
@@ -27,9 +27,9 @@
 
 /* Dark mode styles */
 .dark-mode .repl-output {
-    background-color: black;
-    border-color: black;
-    color: #ffffff;
+    background-color: var(--black-background);
+    border:none;
+    color: var(--light-text);
 }
 
 .dark-mode .repl-output::-webkit-scrollbar-track {

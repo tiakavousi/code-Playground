@@ -1,8 +1,9 @@
-Editor container
-.repl-editor {
+@import '../../styles/variables.css';
+
+.repl-editor{
     display: flex;
     flex-direction: column;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--light-border);
     border-radius: 4px;
 }
 
@@ -22,25 +23,11 @@ Editor container
     overflow: auto;
 }
 
-
-.dark-mode .repl-button:hover:not(:disabled) {
-    background-color: #3a3a3a; /* Darker hover color for dark mode */
-}
-
-/* Bottom controls */
-.bottom-controls {
-    display: flex;
-    justify-content: flex-start;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #dee2e6;
-}
-
 /* Share link styles */
 .share-link-container {
     margin-top: 1rem;
     padding: 1rem;
-    background-color: #f8f9fa;
+    background-color: var(--light-background);
     border-radius: 4px;
 }
 
@@ -71,8 +58,8 @@ Editor container
 .dark-mode .share-link-container,
 .dark-mode .share-link-input,
 .dark-mode .bottom-controls {
-    background-color: #2d2d2d;
-    border-color: #404040;
+    background-color: var(--dark-background);
+    border-color: var(--dark-border);
     color: #ffffffc2;
 }
 

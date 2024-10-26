@@ -1,9 +1,12 @@
+@import '../../styles/variables.css';
+
 /* Header container */
 
 .column {
     float: left;
     width: 50%;
 }
+
 .row:after {
     content: "";
     display: table;
@@ -11,9 +14,13 @@
   }
 
 .repl-title {
-    color: #3585d6; 
-    font-size: 34px;
-    font-family: "Lucida Console", "Courier New", monospace;
+    color: var(--text-dark); 
+    font-size: 12px;
+    font-family: monospace;
+}
+
+.dark-mode .repl-title {
+    color: var(--text-light); 
 }
 
 .repl-controls {

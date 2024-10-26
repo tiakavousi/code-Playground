@@ -1,0 +1,28 @@
+
+:root {
+    /* Text Colors */
+    --text-light: #f0ededde;
+    --text-dark: #191818;
+
+    /* Font sizes */
+    --font-size-large: 1rem;
+    --font-size-medium: 0.5rem;
+    --font-size-small: 0.25rem;
+
+    /* light background */
+    --white-background: #ffffff;
+    --light-background: #c0c0c7;
+
+
+    /* dark background */
+    --black-background: #121216;
+    --dark-background: #343338;
+
+    /* buttons */
+    --primary-color: #3585d6;
+    --hover-color: #2e90f9a8;
+
+    --dark-border:#404040;
+    --light-border:#b4b4d7;
+
+}

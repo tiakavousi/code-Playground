@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, useParams } from 'react-router-dom';
 import Main from './components/Main';
+import './styles/App.css';
 
 function SharedCodeLoader({ wsUrl }) {
   const [sharedCode, setSharedCode] = useState(null);

@@ -6,7 +6,7 @@ const Header = ({ isDarkMode, toggleTheme, accentColor, handleColorChange }) => 
     return (
         <div className="row repl-header">
             <div className='column repl-title'>
-                <h1 className='title'>Code Playground</h1>
+                <h3 className='title'>Code Playground</h3>
             </div>
             <div className="column repl-controls">
                 <button onClick={toggleTheme} className="theme-toggle-switch" aria-label="Toggle dark mode">
