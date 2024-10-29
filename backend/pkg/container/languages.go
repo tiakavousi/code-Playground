@@ -61,11 +61,6 @@ func (d *DockerRunner) prepareJavaScriptCommand(ctx context.Context, baseArgs []
 
 	// For JavaScript, we use node directly instead of writing to a file
 	args = append(args, "node", "-e", code)
-	return exec.CommandContext(ctx, "docker", args...)
-}
 
-// Helper function for interpreted languages (Python, etc.)
-func (d *DockerRunner) prepareInterpretedCommand(ctx context.Context, baseArgs []string, interpreter string, code string) *exec.Cmd {
-	args := append(baseArgs, d.imageName, interpreter, "-c", code)
 	return exec.CommandContext(ctx, "docker", args...)
 }

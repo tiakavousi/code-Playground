@@ -32,7 +32,9 @@ func NewService(runner CodeRunner) *Service {
 }
 
 // ExecuteInteractive runs code with interactive I/O
-func (s *Service) ExecuteInteractive(ctx context.Context, req ExecRequest, input <-chan string, output chan<- string) error {
+func (s *Service) ExecuteInteractive(
+	ctx context.Context, req ExecRequest, 
+	input <-chan string, output chan<- string) error {
 	// Validate request
 	if err := validateRequest(req); err != nil {
 		return fmt.Errorf("invalid request: %w", err)
@@ -47,51 +49,12 @@ func (s *Service) ExecuteInteractive(ctx context.Context, req ExecRequest, input
 	if err != nil {
 		log.Printf("Execution error for language %s: %v", req.Language, err)
 		if execCtx.Err() == context.DeadlineExceeded {
-			return fmt.Errorf("execution timed out after 30 seconds")
+			return fmt.Errorf("execution timed out after 10 seconds")
 		}
 		return fmt.Errorf("execution error: %w", err)
 	}
 
 	return nil
-}
-
-// Execute runs code and returns the output (non-interactive)
-func (s *Service) Execute(req ExecRequest) (string, error) {
-	// Validate request
-	if err := validateRequest(req); err != nil {
-		return "", fmt.Errorf("invalid request: %w", err)
-	}
-
-	// Create execution context
-	ctx, cancel := context.WithTimeout(context.Background(), 10 *time.Second)
-	defer cancel()
-
-	// Create channels for communication
-	output := make(chan string, 5)
-	input := make(chan string, 5)
-	defer close(input)
-
-	// Execute the code
-	errCh := make(chan error, 1)
-	go func() {
-		start := time.Now()
-		err := s.ExecuteInteractive(ctx, req, input, output)
-		log.Printf("Execution took %v", time.Since(start))
-		errCh <- err
-	}()
-
-	// Collect output
-	var result strings.Builder
-	for {
-		select {
-		case line := <-output:
-			result.WriteString(line + "\n")
-		case err := <-errCh:
-			return result.String(), err
-		case <-ctx.Done():
-			return result.String(), fmt.Errorf("execution timed out after %v: %w", 10 *time.Second, ctx.Err())
-		}
-	}
 }
 
 // validateRequest checks if the request is valid

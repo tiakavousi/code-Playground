@@ -96,7 +96,6 @@ func setupRouter() *gin.Engine {
 
 	// Routes
 	router.GET("/execute", handleWebSocket)
-	router.POST("/execute", handleExecute)
 	router.POST("/save", handleSaveCode)
 	router.GET("/share/:id", handleGetSavedCode)
 	router.GET("/", handleHealthCheck)
@@ -109,6 +108,7 @@ func handleHealthCheck(c *gin.Context) {
 }
 
 func handleWebSocket(c *gin.Context) {
+	log.Printf(" handleWebSocket CALLED!!!")
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println("WebSocket upgrade error:", err)
@@ -139,7 +139,12 @@ func handleWebSocket(c *gin.Context) {
 	handleWebSocketCommunication(ctx, conn, input, output, done)
 }
 
-func executeCode(ctx context.Context, req executor.ExecRequest, input chan string, output chan string, done chan struct{}) {
+func executeCode(
+	ctx context.Context, 
+	req executor.ExecRequest, 
+	input chan string, 
+	output chan string, 
+	done chan struct{}) {
 	defer close(done)
 	err := execService.ExecuteInteractive(ctx, req, input, output)
 	if err != nil {
@@ -150,7 +155,7 @@ func executeCode(ctx context.Context, req executor.ExecRequest, input chan strin
 	}
 }
 
-func handleWebSocketCommunication(ctx context.Context, conn *websocket.Conn, input chan string, output chan string, done chan struct{}) {
+func handleWebSocketCommunication(ctx context.Context, conn *websocket.Conn, input chan string, output chan string, done chan struct{}){
 	// Handle input from WebSocket
 	go func() {
 		defer close(input)
@@ -192,21 +197,6 @@ func handleWebSocketCommunication(ctx context.Context, conn *websocket.Conn, inp
 	}
 }
 
-func handleExecute(c *gin.Context) {
-	var req executor.ExecRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	output, err := execService.Execute(req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"output": output})
-}
 
 func handleSaveCode(c *gin.Context) {
 	var req SavedCode
@@ -229,6 +219,7 @@ func handleSaveCode(c *gin.Context) {
 }
 
 func handleGetSavedCode(c *gin.Context) {
+	log.Printf(" handleGetSavedCode CALLED!!! .GET: share/:id ")
 	id := c.Param("id")
 
 	codesMutex.RLock()
